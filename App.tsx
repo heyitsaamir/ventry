@@ -1,38 +1,26 @@
-import * as React from 'react';
-import { Button, View } from 'react-native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { NavigationContainer } from '@react-navigation/native';
-import DrawerContent from './Navigation/DrawerList';
-import Container from './Container/Container';
+import React from "react";
+import * as eva from "@eva-design/eva";
+import { ApplicationProvider, IconRegistry } from "@ui-kitten/components";
+import { EvaIconsPack } from "@ui-kitten/eva-icons";
+import { AppNavigator } from "./Components/Navigation";
+import { ThemeContext } from "./Theme/theme-context";
 
-function HomeScreen({ navigation }) {
+export default () => {
+  const [theme, setTheme] = React.useState("light");
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+  };
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Button
-        onPress={() => navigation.navigate('Notifications')}
-        title="Go to notifications"
-      />
-    </View>
+    <>
+      <IconRegistry icons={EvaIconsPack} />
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ApplicationProvider {...eva} theme={eva[theme]}>
+          <AppNavigator />
+        </ApplicationProvider>
+      </ThemeContext.Provider>
+    </>
   );
-}
-
-function NotificationsScreen({ navigation }) {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Button onPress={() => navigation.goBack()} title="Go back home" />
-    </View>
-  );
-}
-
-const Drawer = createDrawerNavigator();
-
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Home" drawerContent={DrawerContent}>
-        <Drawer.Screen name="Home" component={Container} ></Drawer.Screen>
-        <Drawer.Screen name="Notifications" component={NotificationsScreen} />
-      </Drawer.Navigator>
-    </NavigationContainer>
-  );
-}
+};

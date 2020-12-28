@@ -1,0 +1,37 @@
+diff --git a/node_modules/react-native-numeric-input/index.d.ts b/node_modules/react-native-numeric-input/index.d.ts
+index b128e17..7d95b19 100644
+--- a/node_modules/react-native-numeric-input/index.d.ts
++++ b/node_modules/react-native-numeric-input/index.d.ts
+@@ -1,5 +1,5 @@
+ declare module 'react-native-numeric-input' {
+-  import { ViewStyle } from 'react-native'
++  import { TextStyle, ViewStyle } from 'react-native'
+   import { Color } from 'csstype'
+ 
+   export interface INumericInputProps {
+@@ -11,14 +11,14 @@ declare module 'react-native-numeric-input' {
+     initValue?: number
+     iconSize?: number
+     borderColor?: Color
+-    iconStyle?: ViewStyle
++    iconStyle?: TextStyle
+     totalWidth?: number
+     separatorWidth?: number
+     type?: 'plus-minus' | 'up-down'
+     rounded?: boolean
+     textColor?: Color
+     containerStyle?: ViewStyle
+-    inputStyle?: ViewStyle
++    inputStyle?: TextStyle
+     upDownButtonsBackgroundColor?: Color
+     rightButtonBackgroundColor?: Color
+     leftButtonBackgroundColor?: Color
+@@ -36,7 +36,7 @@ declare module 'react-native-numeric-input' {
+ 
+   export default class NumericInput extends React.Component<
+     INumericInputProps
+-  > {}
++    > { }
+ 
+   export const DIMENTIONS: { height: number; width: number }
+ }
