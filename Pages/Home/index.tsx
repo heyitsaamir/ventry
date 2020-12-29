@@ -23,7 +23,11 @@ export const HomeScreen = ({ navigation }: Props) => {
   };
 
   const navigateAddItem = () => {
-    navigation.navigate("AddItem");
+    navigation.navigate("AddItem", { parentItemId: "" });
+  };
+
+  const navigateRootList = () => {
+    navigation.navigate("ItemList", { itemId: "" });
   };
 
   return (
@@ -43,6 +47,9 @@ export const HomeScreen = ({ navigation }: Props) => {
           </Button>
           <Button style={styles.button} onPress={themeContext.toggleTheme}>
             TOGGLE THEME
+          </Button>
+          <Button style={styles.button} onPress={navigateRootList}>
+            Root List
           </Button>
         </HorizontalSplit>
       </Layout>

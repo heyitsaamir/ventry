@@ -5,6 +5,9 @@ import { EvaIconsPack } from "@ui-kitten/eva-icons";
 import { AppNavigator } from "./Components/Navigation";
 import { ThemeContext } from "./Theme/theme-context";
 
+import { Provider } from "react-redux";
+import Store from "./Store";
+
 export default () => {
   const [theme, setTheme] = React.useState("light");
 
@@ -18,7 +21,9 @@ export default () => {
       <IconRegistry icons={EvaIconsPack} />
       <ThemeContext.Provider value={{ theme, toggleTheme }}>
         <ApplicationProvider {...eva} theme={eva[theme]}>
-          <AppNavigator />
+          <Provider store={Store}>
+            <AppNavigator />
+          </Provider>
         </ApplicationProvider>
       </ThemeContext.Provider>
     </>

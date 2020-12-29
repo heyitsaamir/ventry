@@ -7,19 +7,32 @@ import { RouteParams } from "./Routes";
 import { DetailsScreen } from "../../Pages/Details";
 import { ThemeContext } from "../../Theme/theme-context";
 import { AddItemScreen } from "../../Pages/AddItem";
+import { ItemList } from "../../Pages/ItemList";
 
-const { Navigator, Screen } = createStackNavigator<RouteParams>();
+const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
+const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
+
+const MainNavigation = () => {
+  const themeContext = React.useContext(ThemeContext);
+
+  return (
+    <MainNavigator>
+      <MainScreen name="Home" component={HomeScreen} />
+      <MainScreen name="Details" component={DetailsScreen} />
+      <MainScreen name="ItemList" component={ItemList} />
+    </MainNavigator>
+  );
+};
 
 export const AppNavigator = () => {
   const themeContext = React.useContext(ThemeContext);
 
   return (
     <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
-      <Navigator>
-        <Screen name="Home" component={HomeScreen} />
-        <Screen name="Details" component={DetailsScreen} />
-        <Screen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
-      </Navigator>
+      <RootNavigator mode="modal">
+        <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
+        <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
+      </RootNavigator>
     </NavigationContainer>
   );
 };

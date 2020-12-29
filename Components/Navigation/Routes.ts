@@ -1,9 +1,19 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
 
 export type RouteParams = {
   Home: undefined;
   Details: undefined;
-  AddItem: undefined;
+  AddItem: {
+    parentItemId: string
+  };
+  ItemList: {
+    itemId: string
+  }
+
+  Main: undefined;
 };
 
 export type NavigatorProps<TKey extends keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;
+export type ScreenProps<TKey extends keyof RouteParams> = StackScreenProps<RouteParams, TKey>
+export const useNav = () => useNavigation<NavigatorProps<keyof RouteParams>>();
