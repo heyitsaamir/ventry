@@ -11,6 +11,7 @@
     "@ui-kitten/eva-icons": "^5.0.0",
     "buffer": "^6.0.3",
     "expo": "~40.0.0",
+    "fuse.js": "^6.4.4",
     "patch-package": "^6.2.2",
     "postinstall-postinstall": "^2.1.0",
     "react": "16.13.1",

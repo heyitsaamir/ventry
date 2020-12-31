@@ -1,5 +1,6 @@
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp, StackScreenProps } from "@react-navigation/stack";
+import { Item } from "../../Store/types";
 
 export type RouteParams = {
   Home: undefined;
@@ -10,8 +11,11 @@ export type RouteParams = {
   ItemList: {
     itemId: string
   }
-
   Main: undefined;
+  Search: {
+    containersOnly?: boolean;
+    onTap?: (item: Item) => void;
+  }
 };
 
 export type NavigatorProps<TKey extends keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;

@@ -18,8 +18,12 @@ export const HomeScreen = ({ navigation }: Props) => {
   const themeContext = React.useContext(ThemeContext);
 
   const largeInputState = useInputState();
-  const navigateDetails = () => {
-    navigation.navigate("Details");
+  const navigateSearch = () => {
+    navigation.navigate("Search", {
+      onTap: (item) => {
+        navigation.navigate("ItemList", { itemId: item.id });
+      },
+    });
   };
 
   const navigateAddItem = () => {
@@ -42,8 +46,8 @@ export const HomeScreen = ({ navigation }: Props) => {
           <Button style={styles.button} onPress={navigateAddItem}>
             ADD ITEM
           </Button>
-          <Button style={styles.button} onPress={navigateDetails}>
-            OPEN DETAILS
+          <Button style={styles.button} onPress={navigateSearch}>
+            OPEN SEARCH
           </Button>
           <Button style={styles.button} onPress={themeContext.toggleTheme}>
             TOGGLE THEME

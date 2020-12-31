@@ -8,6 +8,7 @@ import { DetailsScreen } from "../../Pages/Details";
 import { ThemeContext } from "../../Theme/theme-context";
 import { AddItemScreen } from "../../Pages/AddItem";
 import { ItemList } from "../../Pages/ItemList";
+import { SearchScreen } from "../../Pages/Search";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
 const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
@@ -32,6 +33,7 @@ export const AppNavigator = () => {
       <RootNavigator mode="modal">
         <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
         <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
+        <MainScreen name="Search" component={SearchScreen} />
       </RootNavigator>
     </NavigationContainer>
   );

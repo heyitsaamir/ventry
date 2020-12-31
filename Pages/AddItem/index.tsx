@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { KeyboardAvoidingView, SafeAreaView, View } from "react-native";
 import {
   Button,
@@ -16,7 +16,7 @@ import NumericInput from "../../Components/NumberInput";
 import { ScrollView } from "react-native-gesture-handler";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
 import { useAppDispatch } from "../../Store";
-import { addItem } from "../../Store/inventory";
+import { addItem, InventoryState } from "../../Store/inventory";
 import { useSelector } from "react-redux";
 import { ContainerItem, Item, State } from "../../Store/types";
 
@@ -55,15 +55,9 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const quantity = useNumberInputState();
   const upcInputState = useInputState();
   const isContainer = useBooleanInputState();
-  const containers = useSelector<State, ContainerItem[]>((state: State) =>
-    Object.values(state.inventory.items).filter((item): item is ContainerItem => item.type === "Container")
-  );
-  const containerInputState = useSelectedIndexState(
-    new IndexPath(
-      (route.params?.parentItemId && containers.findIndex((c) => c.id === route.params.parentItemId)) || 0
-    )
-  );
-  const parent = containers[(containerInputState.selectedIndex as IndexPath).row];
+  const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
+  const [parentId, setParentId] = useState(route.params?.parentItemId || "");
+  const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
   const addItemCb = useCallback(() => {
@@ -95,6 +89,16 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
     navigation.navigate("ItemList", { itemId: parent.id });
   }, [dispatch, navigation, nameInputState, quantity, upcInputState]);
 
+  const navigateSearch = () => {
+    navigation.navigate("Search", {
+      containersOnly: true,
+      onTap: (item) => {
+        setParentId(item.id);
+        navigation.goBack();
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
@@ -102,13 +106,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
           <KeyboardAvoidingView style={{ alignItems: "center" }}>
             <InputContainer>
               <Toggle {...isContainer}>Is this a container?</Toggle>
-              {containers.length > 0 && (
-                <Select {...containerInputState} value={parent.name || "Root"}>
-                  {containers.map((container, index) => (
-                    <SelectItem title={container.name || "Root"} key={index} />
-                  ))}
-                </Select>
-              )}
+              <Text onPress={navigateSearch}>{parent.name || "Root"}</Text>
             </InputContainer>
             <Divider />
             <SimpleInput
