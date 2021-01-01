@@ -1,9 +1,9 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
-import { Button, Divider, Input, Layout, Text } from "@ui-kitten/components";
 import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
 import { NavigatorProps } from "../../Components/Navigation/Routes";
+import { Button, Input, Text } from "react-native-elements";
 
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -36,27 +36,15 @@ export const HomeScreen = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <HorizontalSplit>
-          <Text category="h2">Search</Text>
-          <SearchInput size="large" placeholder="Search" {...largeInputState} />
-        </HorizontalSplit>
-        <Divider />
-        <HorizontalSplit>
-          <Button style={styles.button} onPress={navigateAddItem}>
-            ADD ITEM
-          </Button>
-          <Button style={styles.button} onPress={navigateSearch}>
-            OPEN SEARCH
-          </Button>
-          <Button style={styles.button} onPress={themeContext.toggleTheme}>
-            TOGGLE THEME
-          </Button>
-          <Button style={styles.button} onPress={navigateRootList}>
-            Root List
-          </Button>
-        </HorizontalSplit>
-      </Layout>
+      <HorizontalSplit>
+        <Input placeholder="Search" {...largeInputState} />
+      </HorizontalSplit>
+      <HorizontalSplit>
+        <Button style={styles.button} onPress={navigateAddItem} title="ADD ITEM" />
+        <Button style={styles.button} onPress={navigateSearch} title="OPEN SEARCH" />
+        <Button style={styles.button} onPress={themeContext.toggleTheme} title="TOGGLE THEME" />
+        <Button style={styles.button} onPress={navigateRootList} title="Root List" />
+      </HorizontalSplit>
     </SafeAreaView>
   );
 };

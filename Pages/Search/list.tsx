@@ -1,7 +1,7 @@
 import React from "react";
-import { Divider, Input, List, ListItem, Text, TextProps } from "@ui-kitten/components";
 import { Item } from "../../Store/types";
 import { View } from "react-native";
+import { ListItem } from "react-native-elements";
 
 interface Props {
   items: Item[];
@@ -9,50 +9,37 @@ interface Props {
 }
 
 export const SearchList = ({ items, onTap }: Props) => {
-  const ListItemRow = ({ item }: { item: Item; index: number }) => {
-    const ListDescriptor = (props: TextProps) => {
-      let category: string;
-      let amt: string;
-      if (item.type === "Container") {
-        category = "Contains: ";
-        amt = `${item.itemsInside.length} items`;
-      } else {
-        category = "Quantity: ";
-        amt = `${item.quantity}`;
-      }
+  const ListItemRow = ({ item }: { item: Item }) => {
+    let category: string;
+    let amt: string;
+    if (item.type === "Container") {
+      category = "Contains: ";
+      amt = `${item.itemsInside.length} items`;
+    } else {
+      category = "Quantity: ";
+      amt = `${item.quantity}`;
+    }
 
-      return (
-        <>
-          <Text style={{ marginVertical: 2 }} {...props}>
-            <Text appearance="hint" category="label">
-              {category}
-            </Text>
-            <Text category="c1">{amt}</Text>
-          </Text>
-          {item.upc && (
-            <Text style={{ marginVertical: 2 }} {...props}>
-              <Text appearance="hint" category="c2">
-                UPC:{" "}
-              </Text>
-              <Text category="c1">{item.upc}</Text>
-            </Text>
-          )}
-        </>
-      );
-    };
-
-    const Title = (props: TextProps) => {
-      const { category, ...restProps } = props;
-      return (
-        <Text {...restProps} category="h1">
-          {item.name}
-        </Text>
-      );
-    };
-    return <ListItem onPress={() => onTap(item)} title={Title} description={ListDescriptor} />;
+    return (
+      <ListItem onPress={() => onTap(item)}>
+        <ListItem.Content>
+          <ListItem.Title>{item.name}</ListItem.Title>
+          {item.upc && <ListItem.Subtitle>Upc: {item.upc}</ListItem.Subtitle>}
+          <ListItem.Subtitle>
+            {category}
+            {amt}
+          </ListItem.Subtitle>
+        </ListItem.Content>
+        <ListItem.Chevron />
+      </ListItem>
+    );
   };
 
   return (
-    <List style={{ width: "100%" }} data={items} ItemSeparatorComponent={Divider} renderItem={ListItemRow} />
+    <>
+      {items.map((item, index) => (
+        <ListItemRow item={item} key={index} />
+      ))}
+    </>
   );
 };

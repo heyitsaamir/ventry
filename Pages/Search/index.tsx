@@ -1,6 +1,5 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
-import { Button, Divider, Input, Layout, Text } from "@ui-kitten/components";
 import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
@@ -8,6 +7,7 @@ import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
 import { useFuse } from "../../lib/fuse/useFuse";
 import { SearchList } from "./list";
+import { SearchBar } from "react-native-elements";
 
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -44,18 +44,11 @@ export const SearchScreen = ({
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <SearchInput size="large" placeholder="Search" {...searchInputState} />
-        <Divider />
-        <SearchList items={searchInputState.value === "" ? items : result.map((r) => r.item)} onTap={onTap} />
-      </Layout>
+      <SearchBar platform="default" placeholder="Search" {...searchInputState} />
+      <SearchList items={searchInputState.value === "" ? items : result.map((r) => r.item)} onTap={onTap} />
     </SafeAreaView>
   );
 };
-
-const SearchInput = styled(Input)({
-  margin: 20,
-});
 
 const HorizontalSplit = styled(View)({
   flex: 1,

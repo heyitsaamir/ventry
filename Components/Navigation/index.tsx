@@ -1,7 +1,6 @@
 import React from "react";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { HomeScreen } from "../../Pages/Home";
-import { Drawer, DrawerItem, IndexPath } from "@ui-kitten/components";
 import { createStackNavigator } from "@react-navigation/stack";
 import { RouteParams } from "./Routes";
 import { DetailsScreen } from "../../Pages/Details";

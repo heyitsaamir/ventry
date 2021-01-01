@@ -1,16 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { KeyboardAvoidingView, SafeAreaView, View } from "react-native";
-import {
-  Button,
-  Divider as UIDivider,
-  IndexPath,
-  Input,
-  Layout,
-  Select,
-  SelectItem,
-  Text,
-  Toggle,
-} from "@ui-kitten/components";
+import React, { useCallback, useContext, useMemo, useState } from "react";
+import { KeyboardAvoidingView, SafeAreaView, Switch, View } from "react-native";
 import styled from "@emotion/native";
 import NumericInput from "../../Components/NumberInput";
 import { ScrollView } from "react-native-gesture-handler";
@@ -19,6 +8,7 @@ import { useAppDispatch } from "../../Store";
 import { addItem, InventoryState } from "../../Store/inventory";
 import { useSelector } from "react-redux";
 import { ContainerItem, Item, State } from "../../Store/types";
+import { Input, ListItem, Icon, Text, Button, ThemeContext } from "react-native-elements";
 
 const useInputState = (initialValue: string = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -31,19 +21,8 @@ const useNumberInputState = (initialValue: number = 1) => {
 };
 
 const useBooleanInputState = (initialValue: boolean = false) => {
-  const [checked, setValue] = React.useState(initialValue);
-  return { checked, onChange: setValue };
-};
-
-const useSelectedIndexState = (initialValue: IndexPath | IndexPath[]) => {
-  const [selectedIndex, setSelectedIndex] = React.useState(initialValue);
-  return {
-    selectedIndex,
-    onSelect: (selectedIndex: IndexPath | IndexPath[]) => {
-      console.log(selectedIndex);
-      setSelectedIndex(selectedIndex);
-    },
-  };
+  const [value, setValue] = React.useState(initialValue);
+  return { value, onValueChange: setValue };
 };
 
 interface Props extends ScreenProps<"AddItem"> {
@@ -61,7 +40,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
 
   const dispatch = useAppDispatch();
   const addItemCb = useCallback(() => {
-    if (!isContainer.checked) {
+    if (!isContainer.value) {
       dispatch(
         addItem({
           newItem: {
@@ -102,41 +81,64 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
-        <Layout style={{ flex: 1 }}>
-          <KeyboardAvoidingView style={{ alignItems: "center" }}>
-            <InputContainer>
-              <Toggle {...isContainer}>Is this a container?</Toggle>
-              <Text onPress={navigateSearch}>{parent.name || "Root"}</Text>
-            </InputContainer>
-            <Divider />
-            <SimpleInput
-              size="large"
-              label="Name"
-              placeholder="What is the name of the item or container?"
-              {...nameInputState}
-            />
-            {!isContainer.checked && <NumericInput label="How many?" {...quantity} />}
-            <SimpleInput
-              size="medium"
-              label="UPC (barcode)"
-              placeholder="Optionally add a UPC for quick search"
-              {...upcInputState}
-            />
-            <View style={{ flex: 0, marginVertical: 20 }}>
-              <Button size="giant" onPress={addItemCb}>
-                Add Item
-              </Button>
-            </View>
-          </KeyboardAvoidingView>
-        </Layout>
+        <InputContainer label="Container info">
+          <ListItem>
+            <ListItem.Content>
+              <ListItem.Title>Is this a container?</ListItem.Title>
+            </ListItem.Content>
+            <Switch {...isContainer} />
+          </ListItem>
+          <ListItem onPress={navigateSearch}>
+            <ListItem.Content>
+              <ListItem.Title>Where is this item contained?</ListItem.Title>
+            </ListItem.Content>
+            <ListItem.Title>{parent.name || "Root"}</ListItem.Title>
+            <ListItem.Chevron />
+          </ListItem>
+        </InputContainer>
+        <InputContainer label="Item info">
+          <ListItem>
+            <ListItem.Title>Name</ListItem.Title>
+            <ListItem.Content>
+              <ListItem.Input placeholder="of the item" {...nameInputState} />
+            </ListItem.Content>
+          </ListItem>
+          {!isContainer.value && (
+            <ListItem>
+              <ListItem.Content>
+                <ListItem.Title>How many?</ListItem.Title>
+              </ListItem.Content>
+              <NumericInput {...quantity} />
+            </ListItem>
+          )}
+          <ListItem>
+            <ListItem.Title>UPC</ListItem.Title>
+            <ListItem.Content>
+              <ListItem.Input placeholder="Optionally add a UPC for quick search" {...upcInputState} />
+            </ListItem.Content>
+          </ListItem>
+        </InputContainer>
+        <View style={{ flex: 0, marginVertical: 20 }}>
+          <Button onPress={addItemCb} title="Add Item" />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const InputContainer = styled(View)({
-  marginVertical: 20,
-});
+const InputContainer = ({ label, children }: { label: string; children: React.ReactNode }) => {
+  const { theme } = useContext(ThemeContext);
+  return (
+    <View>
+      <View
+        style={{ backgroundColor: theme.colors.grey5, height: 50, justifyContent: "flex-end", padding: 10 }}
+      >
+        <Text style={{ fontSize: 16 }}>{label}</Text>
+      </View>
+      {children}
+    </View>
+  );
+};
 
 const SimpleInput = styled(Input)({
   // marginVertical: 20,
@@ -144,4 +146,4 @@ const SimpleInput = styled(Input)({
   flex: 1,
 });
 
-const Divider = styled(UIDivider)({ alignSelf: "stretch" });
+const Divider = styled(View)({ alignSelf: "stretch" });

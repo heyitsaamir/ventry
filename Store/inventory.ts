@@ -16,7 +16,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         type: 'Container',
         id: '',
         createdAtUTC: (new Date()).toUTCString(),
-        name: '',
+        name: 'Root',
         itemsInside: ['kitchen-id'],
       },
       'kitchen-id': {

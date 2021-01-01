@@ -1,4 +1,6 @@
-import { Text, ThemedComponentProps, withStyles } from "@ui-kitten/components";
+// import { Text, ThemedComponentProps, withStyles } from "@ui-kitten/components";
+import styled from "@emotion/native";
+import { Text } from "react-native-elements";
 import React from "react";
 import { View } from "react-native";
 import NumericInput, { INumericInputProps } from "react-native-numeric-input";
@@ -7,31 +9,34 @@ interface Props {
   label?: string;
 }
 
-const NumberInputWrapper = (props: Props & INumericInputProps & ThemedComponentProps) => {
-  const { eva, label } = props;
+const NumberInputWrapper = (props: Props & INumericInputProps) => {
+  const { label } = props;
 
   return (
-    <View style={{ width: "100%", alignItems: "center" }}>
-      {label && (
-        <Text style={{ marginVertical: 5 }} category="label" appearance="hint">
-          {label}
-        </Text>
-      )}
-      <NumericInput
-        rounded
-        totalWidth={240}
-        totalHeight={50}
-        borderColor={eva.theme?.["border-alterantive-color-1"]}
-        leftButtonBackgroundColor={eva.theme?.["background-basic-color-1"]}
-        rightButtonBackgroundColor={eva.theme?.["background-basic-color-1"]}
-        textColor={eva.theme?.["text-basic-color"]}
-        iconStyle={{ color: eva.theme?.["text-basic-color"] }}
-        {...props}
-      />
+    <View>
+      {label && <Text>{label}</Text>}
+      <NumberInputContainer>
+        <NumericInput
+          rounded
+          totalWidth={240}
+          totalHeight={40}
+          // textColor={platform.textColor}
+          // iconStyle={{ color: platform.textColor as string }}
+          {...props}
+        />
+      </NumberInputContainer>
     </View>
   );
 };
 
-const ThemedNumberInputWrapper = withStyles(NumberInputWrapper);
+const NumberInputContainer = styled(View)({
+  // width: "100%",
+  // flexDirection: "row",
+  // height: 55,
+  // justifyContent: "flex-start",
+  // alignItems: "center",
+});
 
-export default ThemedNumberInputWrapper;
+// const ThemedNumberInputWrapper = withStyles(NumberInputWrapper);
+
+export default NumberInputWrapper;
