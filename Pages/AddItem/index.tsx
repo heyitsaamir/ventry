@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { ContainerItem, Item, State } from "../../Store/types";
 import { Input, ListItem, Icon, Text, Button, ThemeContext } from "react-native-elements";
 import { SearchContext } from "../../Components/Navigation/searchContext";
+import { CameraContext } from "../../Components/Navigation/cameraContext";
 
 const useInputState = (initialValue: string = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -38,6 +39,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
   const [parentId, setParentId] = useState(route.params?.parentItemId || "");
   const searchContext = useContext(SearchContext);
+  const cameraContext = useContext(CameraContext);
   const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
@@ -119,6 +121,18 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
             <ListItem.Content>
               <ListItem.Input placeholder="Optionally add a UPC for quick search" {...upcInputState} />
             </ListItem.Content>
+            <Icon
+              name="camera"
+              type="font-awesome-5"
+              onPress={() => {
+                cameraContext.setOnBarcodeScanned((barCodeString: string) => {
+                  navigation.goBack();
+                  upcInputState.onChangeText(barCodeString);
+                  cameraContext.setOnBarcodeScanned(undefined);
+                });
+                navigation.push("AddItemUsingCamera");
+              }}
+            />
           </ListItem>
         </InputContainer>
         <View style={{ flex: 0, marginVertical: 20 }}>

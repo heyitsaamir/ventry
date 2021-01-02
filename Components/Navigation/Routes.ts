@@ -14,7 +14,8 @@ export type RouteParams = {
   Main: undefined;
   Search: {
     containersOnly?: boolean;
-  }
+  },
+  AddItemUsingCamera: undefined
 };
 
 export type NavigatorProps<TKey extends keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;

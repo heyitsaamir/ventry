@@ -10,6 +10,8 @@ import { ItemList } from "../../Pages/ItemList";
 import { SearchScreen } from "../../Pages/Search";
 import { OnItemTap, SearchContext } from "./searchContext";
 import { Item } from "../../Store/types";
+import CameraScreen from "../../Pages/AddItem/camera";
+import { OnBarcodeScanned, CameraContext } from "./cameraContext";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
 const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
@@ -26,30 +28,33 @@ const MainNavigation = () => {
   );
 };
 
+function setCB<T>(setter: (setterCb?: () => T) => void) {
+  return (cb?: T) => {
+    setter(() => cb);
+  };
+}
+
 export const AppNavigator = () => {
   const [onItemTap, setOnTap] = useState<OnItemTap | undefined>(undefined);
+  const [onBarcodeScanned, setBarcodeScanned] = useState<OnBarcodeScanned | undefined>(undefined);
 
-  const setOnItemTap = (cb?: OnItemTap) => {
-    setOnTap(() => {
-      return (item) => {
-        if (cb) {
-          cb(item);
-        }
-        setOnItemTap(undefined);
-      };
-    });
-  };
+  const setOnItemTap = setCB<OnItemTap>(setOnTap);
+  const setOnBarcodeScanned = setCB<OnBarcodeScanned>(setBarcodeScanned);
+
   const themeContext = React.useContext(ThemeContext);
 
   return (
     <SearchContext.Provider value={{ onItemTap, setOnItemTap }}>
-      <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
-        <RootNavigator mode="modal">
-          <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
-          <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
-          <MainScreen name="Search" component={SearchScreen} />
-        </RootNavigator>
-      </NavigationContainer>
+      <CameraContext.Provider value={{ onBarcodeScanned, setOnBarcodeScanned }}>
+        <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
+          <RootNavigator mode="modal">
+            <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
+            <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
+            <MainScreen name="Search" component={SearchScreen} />
+            <MainScreen name="AddItemUsingCamera" component={CameraScreen} />
+          </RootNavigator>
+        </NavigationContainer>
+      </CameraContext.Provider>
     </SearchContext.Provider>
   );
 };
