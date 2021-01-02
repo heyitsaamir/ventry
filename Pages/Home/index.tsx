@@ -4,6 +4,7 @@ import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
 import { NavigatorProps } from "../../Components/Navigation/Routes";
 import { Button, Input, Text } from "react-native-elements";
+import { SearchContext } from "../../Components/Navigation/searchContext";
 
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -16,14 +17,14 @@ interface Props {
 
 export const HomeScreen = ({ navigation }: Props) => {
   const themeContext = React.useContext(ThemeContext);
+  const searchContext = React.useContext(SearchContext);
 
   const largeInputState = useInputState();
   const navigateSearch = () => {
-    navigation.navigate("Search", {
-      onTap: (item) => {
-        navigation.navigate("ItemList", { itemId: item.id });
-      },
+    searchContext.setOnItemTap((item) => {
+      navigation.navigate("ItemList", { itemId: item.id });
     });
+    navigation.navigate("Search");
   };
 
   const navigateAddItem = () => {

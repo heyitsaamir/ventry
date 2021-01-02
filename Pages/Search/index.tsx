@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { useFuse } from "../../lib/fuse/useFuse";
 import { SearchList } from "./list";
 import { SearchBar } from "react-native-elements";
+import { SearchContext } from "../../Components/Navigation/searchContext";
 
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -20,10 +21,9 @@ interface Props extends ScreenProps<"Search"> {
 
 export const SearchScreen = ({
   navigation,
-  route: {
-    params: { containersOnly, onTap },
-  },
+  route: { params: { containersOnly } = { containersOnly: false } },
 }: Props) => {
+  const { onItemTap } = useContext(SearchContext);
   const items = useSelector<State, Item[]>((state) =>
     Object.values(state.inventory.items).filter((item) => {
       if (containersOnly === true) {
@@ -45,7 +45,10 @@ export const SearchScreen = ({
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <SearchBar platform="default" placeholder="Search" {...searchInputState} />
-      <SearchList items={searchInputState.value === "" ? items : result.map((r) => r.item)} onTap={onTap} />
+      <SearchList
+        items={searchInputState.value === "" ? items : result.map((r) => r.item)}
+        onTap={onItemTap}
+      />
     </SafeAreaView>
   );
 };

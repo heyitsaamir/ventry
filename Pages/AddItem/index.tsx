@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, SafeAreaView, Switch, View } from "react-native";
 import styled from "@emotion/native";
 import NumericInput from "../../Components/NumberInput";
@@ -9,6 +9,7 @@ import { addItem, InventoryState } from "../../Store/inventory";
 import { useSelector } from "react-redux";
 import { ContainerItem, Item, State } from "../../Store/types";
 import { Input, ListItem, Icon, Text, Button, ThemeContext } from "react-native-elements";
+import { SearchContext } from "../../Components/Navigation/searchContext";
 
 const useInputState = (initialValue: string = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -36,6 +37,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const isContainer = useBooleanInputState();
   const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
   const [parentId, setParentId] = useState(route.params?.parentItemId || "");
+  const searchContext = useContext(SearchContext);
   const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
@@ -69,12 +71,13 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   }, [dispatch, navigation, nameInputState, quantity, upcInputState]);
 
   const navigateSearch = () => {
+    searchContext.setOnItemTap((item) => {
+      setParentId(item.id);
+      navigation.goBack();
+    });
+
     navigation.navigate("Search", {
       containersOnly: true,
-      onTap: (item) => {
-        setParentId(item.id);
-        navigation.goBack();
-      },
     });
   };
 

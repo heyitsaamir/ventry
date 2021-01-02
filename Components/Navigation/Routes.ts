@@ -14,7 +14,6 @@ export type RouteParams = {
   Main: undefined;
   Search: {
     containersOnly?: boolean;
-    onTap?: (item: Item) => void;
   }
 };
 

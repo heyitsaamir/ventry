@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { HomeScreen } from "../../Pages/Home";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -8,6 +8,8 @@ import { ThemeContext } from "../../Theme/theme-context";
 import { AddItemScreen } from "../../Pages/AddItem";
 import { ItemList } from "../../Pages/ItemList";
 import { SearchScreen } from "../../Pages/Search";
+import { OnItemTap, SearchContext } from "./searchContext";
+import { Item } from "../../Store/types";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
 const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
@@ -25,15 +27,29 @@ const MainNavigation = () => {
 };
 
 export const AppNavigator = () => {
+  const [onItemTap, setOnTap] = useState<OnItemTap | undefined>(undefined);
+
+  const setOnItemTap = (cb?: OnItemTap) => {
+    setOnTap(() => {
+      return (item) => {
+        if (cb) {
+          cb(item);
+        }
+        setOnItemTap(undefined);
+      };
+    });
+  };
   const themeContext = React.useContext(ThemeContext);
 
   return (
-    <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
-      <RootNavigator mode="modal">
-        <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
-        <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
-        <MainScreen name="Search" component={SearchScreen} />
-      </RootNavigator>
-    </NavigationContainer>
+    <SearchContext.Provider value={{ onItemTap, setOnItemTap }}>
+      <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
+        <RootNavigator mode="modal">
+          <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
+          <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
+          <MainScreen name="Search" component={SearchScreen} />
+        </RootNavigator>
+      </NavigationContainer>
+    </SearchContext.Provider>
   );
 };
