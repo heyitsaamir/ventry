@@ -15,13 +15,6 @@ export const ItemCard = ({ itemId }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.items[itemId]);
   const navigation = useNav();
 
-  const Header = (props: ViewProps) => (
-    <View {...props}>
-      <Text>{item.name}</Text>
-      <Text>Type: {item.type}</Text>
-    </View>
-  );
-
   const { theme } = useContext(ThemeContext);
   let category: string;
   let amt: string;

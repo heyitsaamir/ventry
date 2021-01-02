@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, SafeAreaView, Switch, View } from "react-native";
+import { KeyboardAvoidingView, Modal, SafeAreaView, Switch, View } from "react-native";
 import styled from "@emotion/native";
 import NumericInput from "../../Components/NumberInput";
 import { ScrollView } from "react-native-gesture-handler";
@@ -11,6 +11,7 @@ import { ContainerItem, Item, State } from "../../Store/types";
 import { Input, ListItem, Icon, Text, Button, ThemeContext } from "react-native-elements";
 import { SearchContext } from "../../Components/Navigation/searchContext";
 import { CameraContext } from "../../Components/Navigation/cameraContext";
+import CameraInput from "./cameraInput";
 
 const useInputState = (initialValue: string = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -40,6 +41,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const [parentId, setParentId] = useState(route.params?.parentItemId || "");
   const searchContext = useContext(SearchContext);
   const cameraContext = useContext(CameraContext);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
@@ -125,12 +127,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
               name="camera"
               type="font-awesome-5"
               onPress={() => {
-                cameraContext.setOnBarcodeScanned((barCodeString: string) => {
-                  navigation.goBack();
-                  upcInputState.onChangeText(barCodeString);
-                  cameraContext.setOnBarcodeScanned(undefined);
-                });
-                navigation.push("AddItemUsingCamera");
+                setShowBarcodeScanner(!showBarcodeScanner);
               }}
             />
           </ListItem>
@@ -139,6 +136,27 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
           <Button onPress={addItemCb} title="Add Item" />
         </View>
       </ScrollView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showBarcodeScanner}
+        // onRequestClose={() => {
+        //   Alert.alert("Modal has been closed.");
+        // }}
+      >
+        <CameraInput
+          dismiss={() => {
+            setShowBarcodeScanner(false);
+          }}
+          input={{
+            type: "Barcode",
+            onBarcodeScanned: (barcode) => {
+              upcInputState.onChangeText(barcode);
+              setShowBarcodeScanner(false);
+            },
+          }}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };
