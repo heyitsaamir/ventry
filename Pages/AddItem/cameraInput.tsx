@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { StyleSheet, View, TouchableOpacity, Dimensions, Animated } from "react-native";
 import { Camera } from "expo-camera";
 import { Icon, Text, ThemeContext } from "react-native-elements";
+import styled from "@emotion/native";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -89,13 +90,7 @@ export default function CameraInput(props: Props) {
   }
 
   return (
-    <View
-      style={{
-        top: height * 0.5,
-        width: "100%",
-        height: height,
-      }}
-    >
+    <Container height={height}>
       <Camera
         style={[styles.camera, { marginTop: imagePadding, marginBottom: imagePadding }]}
         onCameraReady={setCameraReady}
@@ -105,41 +100,35 @@ export default function CameraInput(props: Props) {
         ref={cameraRef}
         type={type}
       />
-      <View
-        style={{
-          zIndex: 10,
-          position: "absolute",
-          right: 10,
-          bottom: height * 0.5,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
+      <InfoContainer height={height}>
         <Text h3 style={{ color: "white" }}>
           {scannedText}
         </Text>
         <View>
           <Icon
             reverse
+            raised
+            name="times"
+            color="red"
+            type="font-awesome-5"
+            onPress={() => {
+              props.dismiss();
+            }}
+          />
+          <Icon
+            reverse
             name="check"
             type="font-awesome-5"
+            color="green"
             onPress={() => {
               if (props.input.onBarcodeScanned) {
                 props.input.onBarcodeScanned(scannedText);
               }
             }}
           />
-          <Icon
-            reverse
-            name="times"
-            type="font-awesome-5"
-            onPress={() => {
-              props.dismiss();
-            }}
-          />
         </View>
-      </View>
-    </View>
+      </InfoContainer>
+    </Container>
   );
 }
 
@@ -151,3 +140,20 @@ const styles = StyleSheet.create({
     alignContent: "center",
   },
 });
+
+const Container = styled(View)<{ height: number }>((props) => ({
+  top: props.height * 0.5,
+  height: props.height,
+  width: "100%",
+  shadowRadius: 10,
+  shadowOpacity: 0.5,
+}));
+
+const InfoContainer = styled(View)<{ height: number }>((props) => ({
+  zIndex: 10,
+  position: "absolute",
+  right: 10,
+  bottom: props.height * 0.5 + 30,
+  flexDirection: "row",
+  alignItems: "center",
+}));
