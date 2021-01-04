@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "_internal": {
+      "isDebug": false,
+      "projectRoot": "/Users/ajawaid/Documents/workspace/ventry",
+      "dynamicConfigPath": null,
+      "staticConfigPath": null,
+      "packageJsonPath": "/Users/ajawaid/Documents/workspace/ventry/package.json"
+    },
+    "name": "ventry",
+    "slug": "ventry",
+    "version": "1.0.0",
+    "sdkVersion": "40.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "io.ventry.client"
+    },
+    "ios": {
+      "bundleIdentifier": "io.ventry.client"
+    }
+  }
+}
