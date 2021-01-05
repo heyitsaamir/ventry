@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "819282744121",
+    "project_id": "ventry-d90aa",
+    "storage_bucket": "ventry-d90aa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:819282744121:android:7312aa33d25e9172b30ee8",
+        "android_client_info": {
+          "package_name": "io.ventry.client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "819282744121-jj6j84pkg6hgjm218e4bp74k0ue2v5ug.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADNc8c9An05OFmCMObexkbKALC9iML3qI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "819282744121-jj6j84pkg6hgjm218e4bp74k0ue2v5ug.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

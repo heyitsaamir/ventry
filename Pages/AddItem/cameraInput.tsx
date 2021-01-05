@@ -3,6 +3,7 @@ import { StyleSheet, View, TouchableOpacity, Dimensions, Animated } from "react-
 import { Camera } from "expo-camera";
 import { Icon, Text, ThemeContext } from "react-native-elements";
 import styled from "@emotion/native";
+import { useHeaderHeight } from "@react-navigation/stack";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -25,8 +26,10 @@ export default function CameraInput(props: Props) {
   const cameraRef = useRef<Camera>();
   const theme = useContext(ThemeContext);
   const [scannedText, setScannedText] = useState("");
+  const headerHeight = useHeaderHeight();
 
-  const { height, width } = Dimensions.get("window");
+  const { height: windowHeight, width } = Dimensions.get("window");
+  const height = windowHeight - headerHeight;
   const screenRatio = height / width;
 
   const setCameraReady = async () => {
@@ -153,7 +156,7 @@ const InfoContainer = styled(View)<{ height: number }>((props) => ({
   zIndex: 10,
   position: "absolute",
   right: 10,
-  bottom: props.height * 0.5 + 30,
+  bottom: 0,
   flexDirection: "row",
   alignItems: "center",
 }));
