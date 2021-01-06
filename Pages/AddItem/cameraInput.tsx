@@ -1,7 +1,7 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef } from "react";
 import { View, Dimensions } from "react-native";
 import { RNCamera, Point, Size, TrackedTextFeature } from "react-native-camera";
-import { Icon, Text, ThemeContext } from "react-native-elements";
+import { Icon, Text } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
