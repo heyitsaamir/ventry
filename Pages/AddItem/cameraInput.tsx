@@ -4,6 +4,8 @@ import { RNCamera, CameraType, Point, Size, TrackedTextFeature } from "react-nat
 import { Icon, Text, ThemeContext } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
+import { useThrottle } from "@react-hook/throttle";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -29,10 +31,10 @@ export default function CameraInput(props: Props) {
   const [imagePadding, setImagePadding] = useState(0);
   const cameraRef = useRef<RNCamera>();
   const theme = useContext(ThemeContext);
-  const [scannedText, setScannedText] = useState<{
+  const [scannedText, setScannedText] = useThrottle<{
     text: string;
     bounds?: { origin: Point; size: Size };
-  } | null>(null);
+  } | null>(null, 1);
   const headerHeight = useHeaderHeight();
 
   const { height: windowHeight, width } = Dimensions.get("window");
@@ -83,10 +85,9 @@ export default function CameraInput(props: Props) {
   };
 
   return (
-    <View>
-      <Container height={height} navHeight={headerHeight}>
-        <RNCamera
-          style={[styles.camera, { marginVertical: imagePadding }]}
+    <ModalWrapper>
+      <Container height={height} cameraPadding={imagePadding} navHeight={headerHeight}>
+        <Camera
           onCameraReady={setCameraReady}
           onBarCodeRead={(res) => {
             if (props.input.type !== "Barcode") return;
@@ -124,7 +125,7 @@ export default function CameraInput(props: Props) {
               <Text>{scannedText.text}</Text>
             </View>
           )}
-        </RNCamera>
+        </Camera>
       </Container>
       <InfoContainer height={height} navHeight={headerHeight}>
         <Text h3 style={{ color: "white", flex: 1 }}>
@@ -143,8 +144,8 @@ export default function CameraInput(props: Props) {
           />
           <Icon
             reverse
-            name="check"
-            type="font-awesome-5"
+            name={"check"}
+            type={"font-awesome-5"}
             color="green"
             onPress={() => {
               switch (props.input.type) {
@@ -159,24 +160,28 @@ export default function CameraInput(props: Props) {
           />
         </View>
       </InfoContainer>
-    </View>
+    </ModalWrapper>
   );
 }
 
-const styles = StyleSheet.create({
-  camera: {
-    flex: 1,
-    justifyContent: "flex-end",
-    alignContent: "center",
-  },
+const Camera = styled(RNCamera)({
+  flex: 1,
+  justifyContent: "flex-end",
+  alignContent: "center",
 });
 
-const Container = styled(View)<{ height: number; navHeight: number }>((props) => ({
-  top: props.height * 0.2,
+const ModalWrapper = styled(View)({
+  backgroundColor: "#00000077",
+});
+
+const Container = styled(View)<{
+  height: number;
+  cameraPadding: number;
+  navHeight: number;
+}>((props) => ({
+  top: props.height * 0.2 + props.cameraPadding,
   height: props.height,
   width: "100%",
-  shadowRadius: 10,
-  shadowOpacity: 0.5,
 }));
 
 const InfoContainer = styled(View)<{ height: number; navHeight: number }>((props) => ({

@@ -131,7 +131,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
               <ListItem.Input placeholder="Optionally add a UPC for quick search" {...upcInputState} />
             </ListItem.Content>
             <Icon
-              name="camera"
+              name="qrcode"
               type="font-awesome-5"
               onPress={() => {
                 setShowScanner("BARCODE");
