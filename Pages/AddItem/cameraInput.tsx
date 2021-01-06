@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
-import { StyleSheet, View, TouchableOpacity, Dimensions, Animated } from "react-native";
-import { RNCamera, CameraType, Point, Size, TrackedTextFeature } from "react-native-camera";
+import React, { useState, useRef, useContext } from "react";
+import { View, Dimensions } from "react-native";
+import { RNCamera, Point, Size, TrackedTextFeature } from "react-native-camera";
 import { Icon, Text, ThemeContext } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
-import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -25,12 +24,11 @@ interface Props {
 }
 
 export default function CameraInput(props: Props) {
-  const [type, setType] = useState<"front" | "back">("back");
+  const [type] = useState<"front" | "back">("back");
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [ratio, setRatio] = useState("4:3");
   const [imagePadding, setImagePadding] = useState(0);
   const cameraRef = useRef<RNCamera>();
-  const theme = useContext(ThemeContext);
   const [scannedText, setScannedText] = useThrottle<{
     text: string;
     bounds?: { origin: Point; size: Size };
