@@ -41,7 +41,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const [parentId, setParentId] = useState(route.params?.parentItemId || "");
   const searchContext = useContext(SearchContext);
   const cameraContext = useContext(CameraContext);
-  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [showScanner, setShowScanner] = useState<"BARCODE" | "TEXT" | "NONE">("NONE");
   const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
@@ -109,6 +109,13 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
             <ListItem.Content>
               <ListItem.Input placeholder="of the item" {...nameInputState} />
             </ListItem.Content>
+            <Icon
+              name="camera"
+              type="font-awesome-5"
+              onPress={() => {
+                setShowScanner("TEXT");
+              }}
+            />
           </ListItem>
           {!isContainer.value && (
             <ListItem>
@@ -127,7 +134,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
               name="camera"
               type="font-awesome-5"
               onPress={() => {
-                setShowBarcodeScanner(!showBarcodeScanner);
+                setShowScanner("BARCODE");
               }}
             />
           </ListItem>
@@ -136,25 +143,30 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
           <Button onPress={addItemCb} title="Add Item" />
         </View>
       </ScrollView>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showBarcodeScanner}
-        // onRequestClose={() => {
-        //   Alert.alert("Modal has been closed.");
-        // }}
-      >
+      <Modal animationType="slide" transparent={true} visible={showScanner !== "NONE"}>
         <CameraInput
           dismiss={() => {
-            setShowBarcodeScanner(false);
+            setShowScanner("NONE");
           }}
-          input={{
-            type: "Barcode",
-            onBarcodeScanned: (barcode) => {
-              upcInputState.onChangeText(barcode);
-              setShowBarcodeScanner(false);
-            },
-          }}
+          input={
+            showScanner === "BARCODE"
+              ? {
+                  type: "Barcode",
+                  onBarcodeScanned: (barcode) => {
+                    upcInputState.onChangeText(barcode);
+                    setShowScanner("NONE");
+                  },
+                }
+              : showScanner === "TEXT"
+              ? {
+                  type: "Text",
+                  onTextScanned: (text) => {
+                    nameInputState.onChangeText(text);
+                    setShowScanner("NONE");
+                  },
+                }
+              : undefined
+          }
         />
       </Modal>
     </SafeAreaView>

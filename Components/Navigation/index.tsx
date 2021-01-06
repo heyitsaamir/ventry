@@ -9,8 +9,6 @@ import { AddItemScreen } from "../../Pages/AddItem";
 import { ItemList } from "../../Pages/ItemList";
 import { SearchScreen } from "../../Pages/Search";
 import { OnItemTap, SearchContext } from "./searchContext";
-import { Item } from "../../Store/types";
-import CameraScreen from "../../Pages/AddItem/camera";
 import { OnBarcodeScanned, CameraContext } from "./cameraContext";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
@@ -51,7 +49,6 @@ export const AppNavigator = () => {
             <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
             <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
             <MainScreen name="Search" component={SearchScreen} />
-            <MainScreen name="AddItemUsingCamera" component={CameraScreen} />
           </RootNavigator>
         </NavigationContainer>
       </CameraContext.Provider>

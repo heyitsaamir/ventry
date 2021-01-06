@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { StyleSheet, View, TouchableOpacity, Dimensions, Animated } from "react-native";
-import { Camera } from "expo-camera";
+import { RNCamera, CameraType, Point, Size, TrackedTextFeature } from "react-native-camera";
 import { Icon, Text, ThemeContext } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
@@ -10,7 +10,12 @@ interface BarcodeInputType {
   onBarcodeScanned: (barcode: string) => void;
 }
 
-type InputType = BarcodeInputType;
+interface TextInputType {
+  type: "Text";
+  onTextScanned: (text: string) => void;
+}
+
+type InputType = BarcodeInputType | TextInputType;
 
 interface Props {
   input: InputType;
@@ -18,14 +23,16 @@ interface Props {
 }
 
 export default function CameraInput(props: Props) {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [type, setType] = useState<"front" | "back">("back");
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [ratio, setRatio] = useState("4:3");
   const [imagePadding, setImagePadding] = useState(0);
-  const cameraRef = useRef<Camera>();
+  const cameraRef = useRef<RNCamera>();
   const theme = useContext(ThemeContext);
-  const [scannedText, setScannedText] = useState("");
+  const [scannedText, setScannedText] = useState<{
+    text: string;
+    bounds?: { origin: Point; size: Size };
+  } | null>(null);
   const headerHeight = useHeaderHeight();
 
   const { height: windowHeight, width } = Dimensions.get("window");
@@ -36,7 +43,6 @@ export default function CameraInput(props: Props) {
     if (!isRatioSet) {
       if (cameraRef.current) {
         const ratios = await cameraRef.current.getSupportedRatiosAsync();
-
         const { ratio: minRatio, ratioString } = ratios.reduce(
           (closestRatio, ratio) => {
             const [width, height] = ratio.split(":").map((str) => parseInt(str));
@@ -65,49 +71,66 @@ export default function CameraInput(props: Props) {
             ratioString: string;
           }
         );
-
         const remainder = Math.floor((height - minRatio * width) / 2);
         // set the preview padding and preview ratio
-        setImagePadding(remainder / 2);
+        setImagePadding(remainder);
         setRatio(ratioString);
         // Set a flag so we don't do this
         // calculation each time the screen refreshes
-        console.log("remainder", ratio);
         setIsRatioSet(true);
       }
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
-
-  if (hasPermission === null) {
-    return <View />;
-  }
-  if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
-  }
-
   return (
-    <Container height={height}>
-      <Camera
-        style={[styles.camera, { marginTop: imagePadding, marginBottom: imagePadding }]}
-        onCameraReady={setCameraReady}
-        onBarCodeScanned={(res) => {
-          setScannedText(res.data);
-        }}
-        ref={cameraRef}
-        type={type}
-      />
-      <InfoContainer height={height}>
-        <Text h3 style={{ color: "white" }}>
-          {scannedText}
+    <View>
+      <Container height={height} navHeight={headerHeight}>
+        <RNCamera
+          style={[styles.camera, { marginVertical: imagePadding }]}
+          onCameraReady={setCameraReady}
+          onBarCodeRead={(res) => {
+            if (props.input.type !== "Barcode") return;
+            setScannedText({ text: res.data });
+          }}
+          onTextRecognized={(res) => {
+            if (props.input.type !== "Text") return;
+            if (res.textBlocks.length > 0) {
+              const filteredBlocks = res.textBlocks.filter(acceptableTBs);
+              const sortedTBs = filteredBlocks
+                .map((tb) => ({ tb, size: sizeForTB(tb) }))
+                .sort((tb1, tb2) => tb2.size - tb1.size)
+                .map((tb) => tb.tb);
+              const [textBlock] = sortedTBs;
+
+              setScannedText({ text: textBlock.value, bounds: textBlock.bounds });
+            }
+          }}
+          ratio={ratio}
+          ref={cameraRef}
+          type={type}
+        >
+          {scannedText?.bounds && (
+            <View
+              style={{
+                borderColor: "wheat",
+                borderWidth: 1,
+                position: "absolute",
+                top: scannedText.bounds.origin.y,
+                right: scannedText.bounds.origin.x,
+                width: scannedText.bounds.size.width,
+                height: scannedText.bounds.size.height,
+              }}
+            >
+              <Text>{scannedText.text}</Text>
+            </View>
+          )}
+        </RNCamera>
+      </Container>
+      <InfoContainer height={height} navHeight={headerHeight}>
+        <Text h3 style={{ color: "white", flex: 1 }}>
+          {scannedText && scannedText.text}
         </Text>
-        <View>
+        <View style={{ flex: 0 }}>
           <Icon
             reverse
             raised
@@ -124,14 +147,19 @@ export default function CameraInput(props: Props) {
             type="font-awesome-5"
             color="green"
             onPress={() => {
-              if (props.input.onBarcodeScanned) {
-                props.input.onBarcodeScanned(scannedText);
+              switch (props.input.type) {
+                case "Barcode":
+                  props.input.onBarcodeScanned(scannedText.text);
+                  break;
+                case "Text":
+                  props.input.onTextScanned(scannedText.text);
+                  break;
               }
             }}
           />
         </View>
       </InfoContainer>
-    </Container>
+    </View>
   );
 }
 
@@ -139,24 +167,28 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
     justifyContent: "flex-end",
-    // padding: 10,
     alignContent: "center",
   },
 });
 
-const Container = styled(View)<{ height: number }>((props) => ({
-  top: props.height * 0.5,
+const Container = styled(View)<{ height: number; navHeight: number }>((props) => ({
+  top: props.height * 0.2,
   height: props.height,
   width: "100%",
   shadowRadius: 10,
   shadowOpacity: 0.5,
 }));
 
-const InfoContainer = styled(View)<{ height: number }>((props) => ({
+const InfoContainer = styled(View)<{ height: number; navHeight: number }>((props) => ({
   zIndex: 10,
   position: "absolute",
   right: 10,
-  bottom: 0,
+  left: 10,
+  top: props.navHeight,
+  height: props.height,
   flexDirection: "row",
-  alignItems: "center",
+  alignItems: "flex-end",
 }));
+
+const sizeForTB = (tb: TrackedTextFeature) => tb.bounds.size.width * tb.bounds.size.height;
+const acceptableTBs = (tb: TrackedTextFeature) => tb.value.split(" ").length < 5;
