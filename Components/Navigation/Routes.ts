@@ -15,6 +15,7 @@ export type RouteParams = {
   Search: {
     containersOnly?: boolean;
   },
+  EmojiSelector: undefined;
 };
 
 export type NavigatorProps<TKey extends keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;

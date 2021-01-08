@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from "re
 import { KeyboardAvoidingView, Modal, SafeAreaView, Switch, View } from "react-native";
 import styled from "@emotion/native";
 import NumericInput from "../../Components/NumberInput";
-import { ScrollView } from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
 import { useAppDispatch } from "../../Store";
 import { addItem, InventoryState } from "../../Store/inventory";
@@ -12,6 +12,7 @@ import { Input, ListItem, Icon, Text, Button, ThemeContext } from "react-native-
 import { SearchContext } from "../../Components/Navigation/searchContext";
 import { CameraContext } from "../../Components/Navigation/cameraContext";
 import CameraInput from "./cameraInput";
+import { EmojiSelectorContext } from "../../Components/Navigation/emojiSelectorContext";
 
 const useInputState = (initialValue: string = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -40,8 +41,10 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
   const [parentId, setParentId] = useState(route.params?.parentItemId || "");
   const searchContext = useContext(SearchContext);
-  const cameraContext = useContext(CameraContext);
+  const emojiContext = useContext(EmojiSelectorContext);
   const [showScanner, setShowScanner] = useState<"BARCODE" | "TEXT" | "NONE">("NONE");
+  const iconInputState = useInputState();
+  const { theme } = useContext(ThemeContext);
   const parent = containers[parentId];
 
   const dispatch = useAppDispatch();
@@ -54,6 +57,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
             name: nameInputState.value,
             quantity: quantity.value,
             upc: upcInputState.value.trim().length > 0 ? upcInputState.value.trim() : undefined,
+            icon: iconInputState.value || undefined,
           },
           parentId: parent.id,
         })
@@ -65,6 +69,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
             type: "Container",
             name: nameInputState.value,
             upc: upcInputState.value.trim().length > 0 ? upcInputState.value.trim() : undefined,
+            icon: iconInputState.value || undefined,
           },
           parentId: parent.id,
         })
@@ -85,24 +90,23 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
     });
   };
 
+  const navigateEmojiSelector = () => {
+    emojiContext.setOnEmojiTap((emoji) => {
+      iconInputState.onChangeText(emoji);
+      navigation.goBack();
+    });
+
+    navigation.navigate("EmojiSelector");
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView>
-        <InputContainer label="Container info">
-          <ListItem>
-            <ListItem.Content>
-              <ListItem.Title>Is this a container?</ListItem.Title>
-            </ListItem.Content>
-            <Switch {...isContainer} />
-          </ListItem>
-          <ListItem onPress={navigateSearch}>
-            <ListItem.Content>
-              <ListItem.Title>Where is this item contained?</ListItem.Title>
-            </ListItem.Content>
-            <ListItem.Title>{parent.name || "Root"}</ListItem.Title>
-            <ListItem.Chevron />
-          </ListItem>
-        </InputContainer>
+        <IconContainer backgroundColor={theme.colors.white}>
+          <MainIconContainer backgroundColor={theme.colors.primary} onPress={navigateEmojiSelector}>
+            <MainIcon>{iconInputState.value || "🍋"}</MainIcon>
+          </MainIconContainer>
+        </IconContainer>
         <InputContainer label="Item info">
           <ListItem>
             <ListItem.Title>Name</ListItem.Title>
@@ -139,11 +143,34 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
             />
           </ListItem>
         </InputContainer>
+        <InputContainer label="Container info">
+          <ListItem>
+            <ListItem.Content>
+              <ListItem.Title>Is this a container?</ListItem.Title>
+            </ListItem.Content>
+            <Switch {...isContainer} />
+          </ListItem>
+          <ListItem onPress={navigateSearch}>
+            <ListItem.Content>
+              <ListItem.Title>Where is this item contained?</ListItem.Title>
+            </ListItem.Content>
+            <ListItem.Title>{parent.name || "Root"}</ListItem.Title>
+            <ListItem.Chevron />
+          </ListItem>
+        </InputContainer>
+
         <View style={{ flex: 0, marginVertical: 20 }}>
           <Button onPress={addItemCb} title="Add Item" />
         </View>
       </ScrollView>
-      <Modal animationType="slide" transparent={true} visible={showScanner !== "NONE"}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showScanner !== "NONE"}
+        onRequestClose={() => {
+          setShowScanner("NONE");
+        }}
+      >
         <CameraInput
           dismiss={() => {
             setShowScanner("NONE");
@@ -194,3 +221,28 @@ const SimpleInput = styled(Input)({
 });
 
 const Divider = styled(View)({ alignSelf: "stretch" });
+
+const IconContainer = styled(View)<{ backgroundColor: string }>((props) => ({
+  height: 100,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: props.backgroundColor,
+}));
+const MainIconContainer = styled(TouchableOpacity)<{ backgroundColor: string }>((props) => ({
+  alignContent: "center",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: 40,
+  width: 80,
+  height: 80,
+  backgroundColor: props.backgroundColor,
+  shadowColor: "rgba(0,0,0, .4)",
+  shadowOffset: { height: 1, width: 1 },
+  shadowOpacity: 1,
+  shadowRadius: 1,
+}));
+
+const MainIcon = styled(Text)({
+  textAlign: "center",
+  fontSize: 40,
+});

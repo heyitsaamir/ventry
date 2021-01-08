@@ -5,6 +5,7 @@ import { Icon, Text } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
+import ModalContainer from "./ModalContainer";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -83,49 +84,47 @@ export default function CameraInput(props: Props) {
   };
 
   return (
-    <ModalWrapper>
-      <Container height={height} cameraPadding={imagePadding} navHeight={headerHeight}>
-        <Camera
-          onCameraReady={setCameraReady}
-          onBarCodeRead={(res) => {
-            if (props.input.type !== "Barcode") return;
-            setScannedText({ text: res.data });
-          }}
-          onTextRecognized={(res) => {
-            if (props.input.type !== "Text") return;
-            if (res.textBlocks.length > 0) {
-              const filteredBlocks = res.textBlocks.filter(acceptableTBs);
-              const sortedTBs = filteredBlocks
-                .map((tb) => ({ tb, size: sizeForTB(tb) }))
-                .sort((tb1, tb2) => tb2.size - tb1.size)
-                .map((tb) => tb.tb);
-              const [textBlock] = sortedTBs;
+    <ModalContainer height={height * 2} extraPadding={imagePadding}>
+      <Camera
+        onCameraReady={setCameraReady}
+        onBarCodeRead={(res) => {
+          if (props.input.type !== "Barcode") return;
+          setScannedText({ text: res.data });
+        }}
+        onTextRecognized={(res) => {
+          if (props.input.type !== "Text") return;
+          if (res.textBlocks.length > 0) {
+            const filteredBlocks = res.textBlocks.filter(acceptableTBs);
+            const sortedTBs = filteredBlocks
+              .map((tb) => ({ tb, size: sizeForTB(tb) }))
+              .sort((tb1, tb2) => tb2.size - tb1.size)
+              .map((tb) => tb.tb);
+            const [textBlock] = sortedTBs;
 
-              setScannedText({ text: textBlock.value, bounds: textBlock.bounds });
-            }
-          }}
-          ratio={ratio}
-          ref={cameraRef}
-          type={type}
-        >
-          {scannedText?.bounds && (
-            <View
-              style={{
-                borderColor: "wheat",
-                borderWidth: 1,
-                position: "absolute",
-                top: scannedText.bounds.origin.y,
-                right: scannedText.bounds.origin.x,
-                width: scannedText.bounds.size.width,
-                height: scannedText.bounds.size.height,
-              }}
-            >
-              <Text>{scannedText.text}</Text>
-            </View>
-          )}
-        </Camera>
-      </Container>
-      <InfoContainer height={height} navHeight={headerHeight}>
+            setScannedText({ text: textBlock.value, bounds: textBlock.bounds });
+          }
+        }}
+        ratio={ratio}
+        ref={cameraRef}
+        type={type}
+      >
+        {scannedText?.bounds && (
+          <View
+            style={{
+              borderColor: "wheat",
+              borderWidth: 1,
+              position: "absolute",
+              top: scannedText.bounds.origin.y,
+              right: scannedText.bounds.origin.x,
+              width: scannedText.bounds.size.width,
+              height: scannedText.bounds.size.height,
+            }}
+          >
+            <Text>{scannedText.text}</Text>
+          </View>
+        )}
+      </Camera>
+      <InfoContainer height={height} topPadding={imagePadding}>
         <Text h3 style={{ color: "white", flex: 1 }}>
           {scannedText && scannedText.text}
         </Text>
@@ -158,7 +157,7 @@ export default function CameraInput(props: Props) {
           />
         </View>
       </InfoContainer>
-    </ModalWrapper>
+    </ModalContainer>
   );
 }
 
@@ -168,27 +167,12 @@ const Camera = styled(RNCamera)({
   alignContent: "center",
 });
 
-const ModalWrapper = styled(View)({
-  backgroundColor: "#00000077",
-});
-
-const Container = styled(View)<{
-  height: number;
-  cameraPadding: number;
-  navHeight: number;
-}>((props) => ({
-  top: props.height * 0.2 + props.cameraPadding,
-  height: props.height,
-  width: "100%",
-}));
-
-const InfoContainer = styled(View)<{ height: number; navHeight: number }>((props) => ({
+const InfoContainer = styled(View)<{ height: number; topPadding: number }>((props) => ({
   zIndex: 10,
   position: "absolute",
   right: 10,
   left: 10,
-  top: props.navHeight,
-  height: props.height,
+  height: props.height - props.topPadding,
   flexDirection: "row",
   alignItems: "flex-end",
 }));
