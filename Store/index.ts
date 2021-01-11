@@ -21,7 +21,8 @@ const store = configureStore({
     serializableCheck: {
       ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER]
     }
-  })
+  }),
+  devTools: true,
 });
 const persistor = persistStore(store)
 

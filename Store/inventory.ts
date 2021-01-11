@@ -6,7 +6,7 @@ export interface InventoryState {
   items: { [id: string]: Item }
 }
 
-type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside"> | Omit<NonContainerItem, 'id' | 'createdAtUTC'>, parentId: string };
+type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'>, parentId: string };
 
 export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<InventoryState>>({
   name: 'inventory',
@@ -17,6 +17,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         id: '',
         createdAtUTC: (new Date()).toUTCString(),
         name: 'Root',
+        parentId: 'x',
         itemsInside: ['kitchen-id'],
       },
       'kitchen-id': {
@@ -24,6 +25,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         id: 'kitchen-id',
         createdAtUTC: (new Date()).toUTCString(),
         name: 'Kitchen',
+        parentId: '',
         itemsInside: ['knives-id', 'spoons-id']
       },
       'knives-id': {
@@ -31,6 +33,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         id: 'knives-id',
         createdAtUTC: (new Date()).toUTCString(),
         name: 'Knives',
+        parentId: 'kitchen-id',
         quantity: 4
       },
       'spoons-id': {
@@ -38,6 +41,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         id: 'spoons-id',
         createdAtUTC: (new Date()).toUTCString(),
         name: 'Spoons',
+        parentId: 'kitchen-id',
         quantity: 4
       }
     },
@@ -45,18 +49,21 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
   reducers: {
     addItem: (state, action: PayloadAction<AddItemParams>) => {
       let itemToAdd: Item;
-      if (action.payload.newItem.type === 'Container') {
-        const containerItem = action.payload.newItem as Omit<ContainerItem, "id" | "createdAt">;
+      const { parentId, newItem } = action.payload;
+      if (newItem.type === 'Container') {
+        const containerItem = newItem;
         itemToAdd = {
           ...containerItem,
+          parentId,
           id: uuid.v4(),
           createdAtUTC: (new Date()).toUTCString(),
           itemsInside: [],
         };
-      } else if (action.payload.newItem.type === 'NonContainer') {
-        const nonContainerItem = action.payload.newItem as Omit<NonContainerItem, "id" | "createdAt">;
+      } else if (newItem.type === 'NonContainer') {
+        const nonContainerItem = newItem;
         itemToAdd = {
           ...nonContainerItem,
+          parentId,
           id: uuid.v4(),
           createdAtUTC: (new Date()).toUTCString(),
         };

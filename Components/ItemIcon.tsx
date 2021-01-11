@@ -27,7 +27,7 @@ export default function ItemIcon({ icon, size: propsSize, isContainer, style }: 
       )}
       {isContainer && icon != null && (
         <ContainerIcon>
-          <Icon size={size / 4} type="font-awesome-5" name={"box-open"} color={theme.colors.black} />
+          <Icon size={size / 3} type="font-awesome-5" name={"box-open"} color={theme.colors.black} />
         </ContainerIcon>
       )}
     </IconContainer>

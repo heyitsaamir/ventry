@@ -1,10 +1,8 @@
-import React, { useContext } from "react";
-import { View } from "react-native";
-import styled from "@emotion/native";
+import React from "react";
 import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
 import { useNav } from "../../Components/Navigation/Routes";
-import { Text, ThemeContext, ListItem } from "react-native-elements";
+import { Text, ListItem } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 
 interface Props {

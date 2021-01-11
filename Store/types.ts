@@ -12,6 +12,7 @@ interface BaseItem {
   createdAtUTC: string;
   upc?: string;
   icon?: string;
+  parentId: string;
 }
 
 export interface NonContainerItem extends BaseItem {
