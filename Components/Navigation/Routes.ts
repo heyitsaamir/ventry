@@ -8,11 +8,17 @@ export type RouteParams = {
   AddItem: {
     parentItemId: string
   };
+  EditItem: {
+    itemId: string
+  };
   ItemList: {
     itemId: string
   }
   Main: undefined;
   Search: {
+    containersOnly?: boolean;
+  },
+  Explore: {
     containersOnly?: boolean;
   },
   EmojiSelector: undefined;

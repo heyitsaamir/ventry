@@ -24,6 +24,7 @@ const MainNavigation = () => {
       <MainScreen name="Home" component={HomeScreen} />
       <MainScreen name="Details" component={DetailsScreen} />
       <MainScreen name="ItemList" component={ItemList} />
+      <MainScreen name="Explore" component={SearchScreen} />
     </MainNavigator>
   );
 };

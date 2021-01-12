@@ -24,7 +24,7 @@ export const HomeScreen = ({ navigation }: Props) => {
     searchContext.setOnItemTap((item) => {
       navigation.navigate("ItemList", { itemId: item.id });
     });
-    navigation.navigate("Search");
+    navigation.navigate("Explore");
   };
 
   const navigateAddItem = () => {
