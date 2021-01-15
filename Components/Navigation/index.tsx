@@ -5,12 +5,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { RouteParams } from "./Routes";
 import { DetailsScreen } from "../../Pages/Details";
 import { ThemeContext } from "../../Theme/theme-context";
-import { AddItemScreen } from "../../Pages/AddItem";
-import { ItemList } from "../../Pages/ItemList";
+import { AddItemScreen, EditItemScreen } from "../../Pages/AddItem";
+import { ItemDetails } from "../../Pages/ItemDetails";
 import { SearchScreen } from "../../Pages/Search";
 import { OnItemTap, SearchContext } from "./searchContext";
 import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
-import { OnBarcodeScanned, CameraContext } from "./cameraContext";
 import { EmojiSelectorScreen } from "../../Pages/EmojiSelector";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
@@ -23,7 +22,7 @@ const MainNavigation = () => {
     <MainNavigator>
       <MainScreen name="Home" component={HomeScreen} />
       <MainScreen name="Details" component={DetailsScreen} />
-      <MainScreen name="ItemList" component={ItemList} />
+      <MainScreen name="ItemDetails" component={ItemDetails} />
       <MainScreen name="Explore" component={SearchScreen} />
     </MainNavigator>
   );
@@ -54,6 +53,7 @@ export const AppNavigator = () => {
           <RootNavigator mode="modal">
             <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
             <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
+            <RootScreen name="EditItem" component={EditItemScreen} options={{ title: "Edit item" }} />
             <MainScreen name="Search" component={SearchScreen} />
             <MainScreen name="EmojiSelector" component={EmojiSelectorScreen} />
           </RootNavigator>

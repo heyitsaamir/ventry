@@ -7,6 +7,7 @@ export interface InventoryState {
 }
 
 type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'>, parentId: string };
+type EditItemParams = { originalItemId: string, updatedItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'> };
 
 export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<InventoryState>>({
   name: 'inventory',
@@ -82,11 +83,15 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           [parent.id]: newParent,
         }
       }
+    },
+    editItem: (state, action: PayloadAction<EditItemParams>) => {
+
     }
   }
 })
 
-const { addItem: addItemFn } = inventorySlice.actions
+const { addItem: addItemFn, editItem: editItemFn } = inventorySlice.actions
 
 export default inventorySlice.reducer;
 export const addItem: ActionCreatorWithPayload<AddItemParams> = addItemFn;
+export const editItem: ActionCreatorWithPayload<EditItemParams> = editItemFn;

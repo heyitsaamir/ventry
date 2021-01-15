@@ -1,17 +1,16 @@
 import React from "react";
 import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
-import { useNav } from "../../Components/Navigation/Routes";
 import { Text, ListItem } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 
 interface Props {
   itemId: string;
+  onTap: (item: Item) => void;
 }
 
-export const ItemCard = ({ itemId }: Props) => {
+export const ItemCard = ({ itemId, onTap }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.items[itemId]);
-  const navigation = useNav();
 
   let category: string;
   let amt: string;
@@ -24,7 +23,7 @@ export const ItemCard = ({ itemId }: Props) => {
   }
 
   return (
-    <ListItem onPress={() => navigation.push("ItemList", { itemId })}>
+    <ListItem onPress={() => onTap(item)}>
       <ItemIcon icon={item.icon} size="sm" isContainer={item.type === "Container"} />
       <ListItem.Content>
         <ListItem.Title>{item.name}</ListItem.Title>

@@ -11,7 +11,7 @@ export type RouteParams = {
   EditItem: {
     itemId: string
   };
-  ItemList: {
+  ItemDetails: {
     itemId: string
   }
   Main: undefined;
@@ -24,6 +24,6 @@ export type RouteParams = {
   EmojiSelector: undefined;
 };
 
-export type NavigatorProps<TKey extends keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;
+export type NavigatorProps<TKey extends keyof RouteParams = keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;
 export type ScreenProps<TKey extends keyof RouteParams> = StackScreenProps<RouteParams, TKey>
 export const useNav = () => useNavigation<NavigatorProps<keyof RouteParams>>();

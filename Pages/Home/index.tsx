@@ -22,7 +22,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   const largeInputState = useInputState();
   const navigateSearch = () => {
     searchContext.setOnItemTap((item) => {
-      navigation.navigate("ItemList", { itemId: item.id });
+      navigation.navigate("ItemDetails", { itemId: item.id });
     });
     navigation.navigate("Explore");
   };
@@ -32,7 +32,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   };
 
   const navigateRootList = () => {
-    navigation.navigate("ItemList", { itemId: "" });
+    navigation.navigate("ItemDetails", { itemId: "" });
   };
 
   return (

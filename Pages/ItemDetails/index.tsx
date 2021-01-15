@@ -1,24 +1,22 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { FlatList, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
-import { ItemCard } from "./ItemCard";
 import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { ScrollView } from "react-native-gesture-handler";
-import { Button, Text, Icon, ThemeContext, Divider } from "react-native-elements";
-import RightNavItemContainer from "../../Components/Navigation/RightNavItemContainer";
+import { Text, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath } from "../../lib/modelUtilities/itemUtils";
-import { FilteringStyledOptions } from "@emotion/native/types/base";
 import { ThemeProps } from "../../Components/Theme/types";
 import InfoTag from "../../Components/InfoTag";
+import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
+import { ItemCard } from "../../Components/ItemListCard";
 
-interface Props extends ScreenProps<"ItemList"> {
-  navigation: NavigatorProps<"ItemList">;
+interface Props extends ScreenProps<"ItemDetails"> {
+  navigation: NavigatorProps<"ItemDetails">;
 }
 
-export const ItemList = ({ route }: Props) => {
+export const ItemDetails = ({ route }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.items[route.params.itemId]);
   const parentPath = useSelector<State, string[]>((state) => {
     if (item) {
@@ -35,30 +33,36 @@ export const ItemList = ({ route }: Props) => {
 
   const nav = useNav();
   const { theme } = useContext(ThemeContext);
-  React.useLayoutEffect(() => {
-    nav.setOptions({
-      title: item.name,
-      headerRight:
-        item.type === "Container"
-          ? () => (
-              <RightNavItemContainer>
-                <Icon
-                  name="add"
-                  type="material"
-                  color={theme.colors.primary}
-                  onPress={() => nav.navigate("AddItem", { parentItemId: item.id })}
-                />
-              </RightNavItemContainer>
-            )
-          : undefined,
-    });
-  }, [nav]);
+  const navButtons = useMemo(() => {
+    const navButtons: RightNavButton[] = [];
+    if (item.id !== "") {
+      navButtons.push({
+        name: "edit",
+        type: "material",
+        onPress: () => nav.navigate("EditItem", { itemId: item.id }),
+      });
+    }
+    if (item.type === "Container") {
+      navButtons.push({
+        name: "add",
+        type: "material",
+        onPress: () => nav.navigate("AddItem", { parentItemId: item.id }),
+      });
+    }
+    return navButtons;
+  }, [item]);
+  useCustomNav({
+    title: item.name,
+    rightButtons: navButtons,
+  });
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <FlatList
         data={item.type === "Container" ? item.itemsInside : []}
-        renderItem={({ item: itemId }) => <ItemCard itemId={itemId} />}
+        renderItem={({ item: itemId }) => (
+          <ItemCard itemId={itemId} onTap={(item) => nav.push("ItemDetails", { itemId: item.id })} />
+        )}
         keyExtractor={(itemId) => itemId}
         stickyHeaderIndices={[0]}
         ListHeaderComponent={
@@ -110,12 +114,6 @@ const TitleContainer = styled(View)({
 });
 
 const TitleContent = styled(View)({});
-
-const CardContainer = styled(View)({
-  width: "100%",
-  display: "flex",
-  flex: 1,
-});
 
 const ItemIconContainer = styled(ItemIcon)({ marginRight: 10 });
 
