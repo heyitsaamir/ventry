@@ -33,8 +33,9 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
               quantity,
               upc,
               icon,
+              parentId: containerId,
             },
-            originalItemId: itemId,
+            itemId,
           })
         );
       } else {
@@ -45,8 +46,9 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
               name,
               upc,
               icon,
+              parentId: containerId,
             },
-            originalItemId: itemId,
+            itemId,
           })
         );
       }
