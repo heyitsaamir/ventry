@@ -23,6 +23,7 @@ export enum FieldType {
 
 interface FieldInfo<T extends FieldType> {
   type: T;
+  disabled?: boolean;
 }
 
 interface IconField extends FieldInfo<FieldType.icon> {
@@ -43,6 +44,7 @@ interface UPCField extends FieldInfo<FieldType.upc> {
 
 interface IsContainerField extends FieldInfo<FieldType.isContainer> {
   isContainer?: boolean;
+  comment?: string;
 }
 
 interface ContainerIdField extends FieldInfo<FieldType.containerId> {
@@ -81,6 +83,10 @@ export class FieldInfoArgs {
 
   get = <T extends FieldType>(type: T): FieldInfoByFieldType[T] => {
     return this.map.get(type) as FieldInfoByFieldType[T];
+  };
+
+  isDisabled = (type: FieldType) => {
+    return !!this.get(type).disabled;
   };
 }
 
@@ -162,18 +168,34 @@ const Form = ({ fields, onDone, navigation }: Props) => {
 
   return (
     <ScrollView>
-      {fields.has(FieldType.icon) && <IconSelector {...iconInputState} navigation={navigation} />}
+      {fields.has(FieldType.icon) && (
+        <IconSelector
+          {...iconInputState}
+          navigation={navigation}
+          disabled={fields.isDisabled(FieldType.icon)}
+        />
+      )}
       <InputContainer label="Item info">
-        {fields.has(FieldType.title) && <TitleSelector {...titleInputState} />}
-        {fields.has(FieldType.quantity) && !isContainerInputState.value && (
-          <NumberSelector {...quantityInputState} />
+        {fields.has(FieldType.title) && (
+          <TitleSelector {...titleInputState} disabled={fields.isDisabled(FieldType.title)} />
         )}
-        {fields.has(FieldType.upc) && <UPCSelector {...upcInputState} />}
+        {fields.has(FieldType.quantity) && !isContainerInputState.value && (
+          <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
+        )}
+        {fields.has(FieldType.upc) && (
+          <UPCSelector {...upcInputState} disabled={fields.isDisabled(FieldType.upc)} />
+        )}
       </InputContainer>
       <InputContainer label="Container info">
-        {fields.has(FieldType.isContainer) && <IsContainerSelector {...isContainerInputState} />}
+        {fields.has(FieldType.isContainer) && (
+          <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
+        )}
         {fields.has(FieldType.containerId) && (
-          <ContainerIdSelector {...containerIdInputState} navigation={navigation} />
+          <ContainerIdSelector
+            {...containerIdInputState}
+            navigation={navigation}
+            disabled={fields.isDisabled(FieldType.containerId)}
+          />
         )}
       </InputContainer>
       <SubmitButton title="Submit" onPress={onSubmit} />
@@ -184,22 +206,26 @@ const Form = ({ fields, onDone, navigation }: Props) => {
 interface StringFieldSelector {
   value: string;
   onChangeText: (newValue: string) => void;
+  disabled?: boolean;
 }
 
 interface NumberFieldSelector {
   value: number;
   onChange: (newValue: number) => void;
+  disabled?: boolean;
 }
 
 interface BooleanFieldSelector {
   value: boolean;
   onValueChange: (newValue: boolean) => void;
+  disabled?: boolean;
 }
 
 const IconSelector = ({
   value,
   onChangeText,
   navigation,
+  disabled,
 }: StringFieldSelector & {
   navigation: NavigatorProps;
 }) => {
@@ -207,6 +233,7 @@ const IconSelector = ({
   const emojiContext = useContext(EmojiSelectorContext);
 
   const navigateEmojiSelector = () => {
+    if (disabled) return;
     emojiContext.setOnEmojiTap((emoji) => {
       onChangeText(emoji);
       navigation.goBack();
@@ -216,7 +243,7 @@ const IconSelector = ({
   };
 
   return (
-    <IconContainer backgroundColor={theme.colors.white}>
+    <IconContainer backgroundColor={theme.colors.white} disabled={disabled}>
       <MainIconContainer backgroundColor={theme.colors.primary} onPress={navigateEmojiSelector}>
         <MainIcon>{value || "🍋"}</MainIcon>
       </MainIconContainer>
@@ -236,6 +263,7 @@ const TitleSelector = (props: StringFieldSelector) => {
         <Icon
           name="camera"
           type="font-awesome-5"
+          disabled={props.disabled}
           onPress={() => {
             setShowScanner(true);
           }}
@@ -278,6 +306,7 @@ const UPCSelector = (props: StringFieldSelector) => {
         <Icon
           name="qrcode"
           type="font-awesome-5"
+          disabled={props.disabled}
           onPress={() => {
             setShowScanner(true);
           }}
@@ -319,11 +348,12 @@ const NumberSelector = (props: NumberFieldSelector) => {
   );
 };
 
-const IsContainerSelector = (props: BooleanFieldSelector) => {
+const IsContainerSelector = (props: BooleanFieldSelector & Omit<IsContainerField, "isContainer">) => {
   return (
     <ListItem>
       <ListItem.Content>
         <ListItem.Title>Is this a container?</ListItem.Title>
+        {props.comment && <ListItem.Subtitle>{props.comment}</ListItem.Subtitle>}
       </ListItem.Content>
       <Switch {...props} />
     </ListItem>
@@ -334,6 +364,7 @@ const ContainerIdSelector = ({
   value,
   onChangeText,
   navigation,
+  disabled,
 }: StringFieldSelector & { navigation: NavigatorProps }) => {
   const searchContext = useContext(SearchContext);
   const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
@@ -350,7 +381,7 @@ const ContainerIdSelector = ({
   };
 
   return (
-    <ListItem onPress={navigateSearch}>
+    <ListItem onPress={navigateSearch} disabled={disabled}>
       <ListItem.Content>
         <ListItem.Title>Where is this item contained?</ListItem.Title>
       </ListItem.Content>
@@ -374,11 +405,12 @@ const InputContainer = ({ label, children }: { label: string; children: React.Re
   );
 };
 
-const IconContainer = styled(View)<{ backgroundColor: string }>((props) => ({
+const IconContainer = styled(View)<{ backgroundColor: string; disabled?: boolean }>((props) => ({
   height: 100,
   alignItems: "center",
   justifyContent: "center",
   backgroundColor: props.backgroundColor,
+  opacity: !props.disabled ? 1 : 0.7,
 }));
 
 const MainIconContainer = styled(TouchableOpacity)<{ backgroundColor: string }>((props) => ({

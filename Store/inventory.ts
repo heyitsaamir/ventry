@@ -85,10 +85,13 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
       if (updatedItem.type === 'NonContainer' && originalItem.type === 'Container' && originalItem.itemsInside.length > 0) {
         throw new Error('Container is not empty. Cannot convert to item');
       }
+      if (updatedItem.type === 'Container' && originalItem.type === 'NonContainer' && originalItem.quantity > 1) {
+        throw new Error('There is more than 1 item. Try convering one to a container');
+      }
       if (originalItem.parentId !== updatedItem.parentId) {
         // update parent
         const originalParent = state.items[originalItem.parentId] as ContainerItem;
-        originalParent.itemsInside = originalParent.itemsInside.filter(itemId => itemId !== itemId);
+        originalParent.itemsInside = originalParent.itemsInside.filter(itemIdInside => itemIdInside !== itemId);
         const newParent = state.items[updatedItem.parentId] as ContainerItem;
         newParent.itemsInside.push(itemId);
       }
@@ -106,6 +109,9 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           id: itemId,
         }
       }
+    },
+    delete: () => {
+
     }
   }
 });

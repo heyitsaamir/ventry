@@ -53,7 +53,7 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
         );
       }
 
-      navigation.navigate("ItemDetails", { itemId: containerId });
+      navigation.goBack();
     },
     [dispatch, navigation]
   );
@@ -63,9 +63,20 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
       { type: FieldType.icon, icon: item.icon },
       { type: FieldType.title, title: item.name },
       { type: FieldType.upc, upc: item.upc },
-      { type: FieldType.isContainer, isContainer: item.type === "Container" },
+      {
+        type: FieldType.isContainer,
+        isContainer: item.type === "Container",
+        disabled: item.type === "Container" && item.itemsInside.length > 0,
+        comment:
+          item.type === "Container" && item.itemsInside.length > 0
+            ? "This item contains stuff. It cannot be converted into a non-container"
+            : undefined,
+      },
       { type: FieldType.containerId, containerId: item.parentId },
-      { type: FieldType.quantity, quantity: item.type === "Container" ? undefined : item.quantity },
+      {
+        type: FieldType.quantity,
+        quantity: item.type === "Container" ? undefined : item.quantity,
+      },
     ];
     return new FieldInfoArgs(emptyFields);
   }, [item]);
