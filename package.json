@@ -11,6 +11,7 @@
     "add": "^2.0.6",
     "buffer": "^6.0.3",
     "expo": "~40.0.0",
+    "expo-asset": "^8.2.1",
     "expo-font": "~8.4.0",
     "expo-splash-screen": "~0.8.0",
     "expo-status-bar": "~1.0.3",
@@ -26,6 +27,7 @@
     "react-native-emoji-selector": "^0.2.0",
     "react-native-gesture-handler": "~1.8.0",
     "react-native-input-spinner": "^1.4.5",
+    "react-native-modal": "^11.6.1",
     "react-native-reanimated": "~1.13.0",
     "react-native-safe-area-context": "3.1.9",
     "react-native-screens": "~2.15.0",
@@ -49,7 +51,6 @@
     "typescript": "~4.0.0"
   },
   "scripts": {
-    "postinstall": "patch-package",
     "start": "react-native start",
     "android": "react-native run-android",
     "ios": "react-native run-ios",

@@ -8,6 +8,7 @@ export interface InventoryState {
 
 type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'>, parentId: string };
 type EditItemParams = { itemId: string, updatedItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside"> | Omit<NonContainerItem, 'id' | 'createdAtUTC'> };
+type DeleteItemParams = { itemId: string, includeContents?: boolean };
 
 const initialState: InventoryState = {
   items: {
@@ -82,6 +83,17 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
       if (!originalItem) {
         throw new Error(`Original item did not exist: ${itemId}`);
       }
+      // Special case for root container
+      // Only allow changing the name or icon
+      if (itemId === '') {
+        state.items[''] = {
+          ...state.items[''],
+          name: updatedItem.name,
+          icon: updatedItem.icon
+        }
+        return;
+      }
+
       if (updatedItem.type === 'NonContainer' && originalItem.type === 'Container' && originalItem.itemsInside.length > 0) {
         throw new Error('Container is not empty. Cannot convert to item');
       }
@@ -100,7 +112,7 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           ...originalItem,
           ...updatedItem,
           id: itemId,
-          itemsInside: [],
+          itemsInside: originalItem.type === 'Container' ? originalItem.itemsInside : []
         }
       } else {
         state.items[itemId] = {
@@ -110,14 +122,39 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
         }
       }
     },
-    delete: () => {
-
+    deleteItem: (state, action: PayloadAction<DeleteItemParams>) => {
+      deleteItemRecursive(state, action.payload);
     }
   }
 });
 
-const { addItem: addItemFn, editItem: editItemFn } = inventorySlice.actions
+const { addItem: addItemFn, editItem: editItemFn, deleteItem: deleteItemFn } = inventorySlice.actions
 
 export default inventorySlice.reducer;
 export const addItem: ActionCreatorWithPayload<AddItemParams> = addItemFn;
 export const editItem: ActionCreatorWithPayload<EditItemParams> = editItemFn;
+export const deleteItem: ActionCreatorWithPayload<DeleteItemParams> = deleteItemFn;
+
+const deleteItemRecursive = (state: InventoryState, payload: DeleteItemParams) => {
+  const { itemId, includeContents = false } = payload;
+  if (itemId === '') return; // Cannot delete root
+
+  const item = state.items[itemId];
+  if (!itemId) {
+    throw new Error(`Item ${itemId} does not exist`);
+  }
+  if (item.type === 'Container' && item.itemsInside.length > 0 && !includeContents) {
+    throw new Error(`Item ${itemId} has things inside so it cannot be deleted without emptying it`);
+  }
+  const parent = state.items[item.parentId] as ContainerItem;
+  parent.itemsInside = parent.itemsInside.filter(itemIdInside => itemIdInside !== itemId);
+
+  if (item.type === 'Container') {
+    // delete all its items inside first
+    for (let i = 0; i < item.itemsInside.length; i++) {
+      deleteItemRecursive(state, { itemId: item.itemsInside[i], includeContents });
+    }
+  }
+
+  delete state.items[itemId];
+}

@@ -5,7 +5,7 @@ import { Icon, Text } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
-import ModalContainer from "./ModalContainer";
+import Modal from "react-native-modal";
 
 interface BarcodeInputType {
   type: "Barcode";
@@ -20,6 +20,7 @@ interface TextInputType {
 type InputType = BarcodeInputType | TextInputType;
 
 interface Props {
+  isVisible: boolean;
   input: InputType;
   dismiss: () => void;
 }
@@ -84,8 +85,17 @@ export default function CameraInput(props: Props) {
   };
 
   return (
-    <ModalContainer height={height * 2} extraPadding={imagePadding}>
+    <Modal
+      style={{ margin: 0 }}
+      isVisible={props.isVisible}
+      onBackdropPress={props.dismiss}
+      hasBackdrop={true}
+      onBackButtonPress={props.dismiss}
+    >
       <Camera
+        height={height}
+        extraPadding={imagePadding}
+        navHeight={headerHeight}
         onCameraReady={setCameraReady}
         onBarCodeRead={(res) => {
           if (props.input.type !== "Barcode") return;
@@ -157,15 +167,21 @@ export default function CameraInput(props: Props) {
           />
         </View>
       </InfoContainer>
-    </ModalContainer>
+    </Modal>
   );
 }
 
-const Camera = styled(RNCamera)({
-  flex: 1,
+const Camera = styled(RNCamera)<{
+  height?: number;
+  extraPadding: number;
+  navHeight: number;
+}>((props) => ({
   justifyContent: "flex-end",
   alignContent: "center",
-});
+  height: props.height,
+  top: props.navHeight + props.extraPadding,
+  width: "100%",
+}));
 
 const InfoContainer = styled(View)<{ height: number; topPadding: number }>((props) => ({
   zIndex: 10,
@@ -175,6 +191,16 @@ const InfoContainer = styled(View)<{ height: number; topPadding: number }>((prop
   height: props.height - props.topPadding,
   flexDirection: "row",
   alignItems: "flex-end",
+}));
+
+const Container = styled(View)<{
+  height?: number;
+  extraPadding: number;
+  navHeight: number;
+}>((props) => ({
+  top: props.navHeight + props.extraPadding,
+  height: props.height,
+  width: "100%",
 }));
 
 const sizeForTB = (tb: TrackedTextFeature) => tb.bounds.size.width * tb.bounds.size.height;

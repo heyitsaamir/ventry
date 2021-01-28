@@ -4,7 +4,7 @@ import styled from "@emotion/native";
 import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { Text, ThemeContext } from "react-native-elements";
+import { Icon, Text, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
@@ -16,8 +16,12 @@ interface Props extends ScreenProps<"ItemDetails"> {
   navigation: NavigatorProps<"ItemDetails">;
 }
 
-export const ItemDetails = ({ route }: Props) => {
+export const ItemDetailsScreen = ({ route }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.items[route.params.itemId]);
+  return item ? <ItemDetails item={item} /> : <Text>Does not exist</Text>;
+};
+
+const ItemDetails = ({ item }: { item: Item }) => {
   const parentPath = useSelector<State, string[]>((state) => {
     if (item) {
       return getParentPath(item, state.inventory);
@@ -35,13 +39,11 @@ export const ItemDetails = ({ route }: Props) => {
   const { theme } = useContext(ThemeContext);
   const navButtons = useMemo(() => {
     const navButtons: RightNavButton[] = [];
-    if (item.id !== "") {
-      navButtons.push({
-        name: "edit",
-        type: "material",
-        onPress: () => nav.navigate("EditItem", { itemId: item.id }),
-      });
-    }
+    navButtons.push({
+      name: "edit",
+      type: "material",
+      onPress: () => nav.navigate("EditItem", { itemId: item.id }),
+    });
     if (item.type === "Container") {
       navButtons.push({
         name: "add",
@@ -81,7 +83,12 @@ export const ItemDetails = ({ route }: Props) => {
                     day: "numeric",
                   })}
                 </Text>
-                <ContainerPath theme={theme}>{parentPath.join(" / ")}</ContainerPath>
+                {item.id !== "" && (
+                  <ContainerPath theme={theme}>
+                    <PathIcon type="octicon" name="chevron-right" size={12} />
+                    {parentPath.join(" / ")}
+                  </ContainerPath>
+                )}
               </TitleContent>
             </TitleContainer>
             <InfoBar item={item} contains={itemsInside} />
@@ -126,3 +133,5 @@ const InfoBarContainer = styled(View)<ThemeProps>((props) => ({
   padding: 5,
   flexDirection: "row",
 }));
+
+const PathIcon = styled(Icon)({ marginRight: 5 });

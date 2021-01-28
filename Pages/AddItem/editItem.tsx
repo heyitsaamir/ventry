@@ -1,9 +1,13 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { SafeAreaView } from "react-native";
+import { Text } from "react-native-elements";
 import { useSelector } from "react-redux";
+import { AlertModal } from "../../Components/AlertModal";
+import { removeItemFromNavStack } from "../../Components/Navigation/customActions/removeItemFromNavStack";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
+import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
 import { useAppDispatch } from "../../Store";
-import { editItem } from "../../Store/inventory";
+import { editItem, deleteItem } from "../../Store/inventory";
 import { Item, State } from "../../Store/types";
 import Form, { FieldType, FieldInfos, FieldInfoArgs } from "./form";
 
@@ -11,13 +15,20 @@ interface Props extends ScreenProps<"EditItem"> {
   navigation: NavigatorProps<"EditItem">;
 }
 
-export const EditItemScreen = ({ route, navigation }: Props) => {
+export const EditItemScreen = ({ route, ...restProps }: Props) => {
   const itemId = route.params!.itemId!;
   const item = useSelector<State, Item>((state: State) => state.inventory.items[itemId]);
+  return item ? <EditItem item={item} {...restProps} /> : <Text>Does not exist</Text>;
+};
+
+const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps<"EditItem"> }) => {
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const dispatch = useAppDispatch();
   const editItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
+      0;
+      if (!item) return;
       const isContainer = fieldInfos.get(FieldType.isContainer)?.isContainer;
       const name = fieldInfos.get(FieldType.title)?.title;
       const quantity = fieldInfos.get(FieldType.quantity)?.quantity;
@@ -35,7 +46,7 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
               icon,
               parentId: containerId,
             },
-            itemId,
+            itemId: item.id,
           })
         );
       } else {
@@ -48,42 +59,82 @@ export const EditItemScreen = ({ route, navigation }: Props) => {
               icon,
               parentId: containerId,
             },
-            itemId,
+            itemId: item.id,
           })
         );
       }
 
       navigation.goBack();
     },
-    [dispatch, navigation]
+    [dispatch, item, navigation]
   );
+  const deleteItemCb = useCallback(() => {
+    dispatch(deleteItem({ itemId: item.id }));
+    navigation.dispatch(removeItemFromNavStack(item.id));
+  }, [dispatch, item, navigation]);
+
+  const navButtons = useMemo(() => {
+    const navButtons: RightNavButton[] = [];
+    navButtons.push({
+      name: "delete",
+      type: "material",
+      onPress: () => setModalVisible(true),
+    });
+    return navButtons;
+  }, [item, navigation]);
+  useCustomNav({
+    title: `Edit ${item.name}`,
+    rightButtons: navButtons,
+  });
 
   const fields = useMemo(() => {
-    const emptyFields: FieldInfos[] = [
-      { type: FieldType.icon, icon: item.icon },
-      { type: FieldType.title, title: item.name },
-      { type: FieldType.upc, upc: item.upc },
-      {
-        type: FieldType.isContainer,
-        isContainer: item.type === "Container",
-        disabled: item.type === "Container" && item.itemsInside.length > 0,
-        comment:
-          item.type === "Container" && item.itemsInside.length > 0
-            ? "This item contains stuff. It cannot be converted into a non-container"
-            : undefined,
-      },
-      { type: FieldType.containerId, containerId: item.parentId },
-      {
-        type: FieldType.quantity,
-        quantity: item.type === "Container" ? undefined : item.quantity,
-      },
-    ];
+    const emptyFields: FieldInfos[] = [];
+    if (!item) return null;
+    if (item.id !== "") {
+      emptyFields.push(
+        { type: FieldType.containerId, containerId: item.parentId },
+        {
+          type: FieldType.quantity,
+          quantity: item.type === "Container" ? undefined : item.quantity,
+        },
+        { type: FieldType.upc, upc: item.upc },
+        {
+          type: FieldType.isContainer,
+          isContainer: item.type === "Container",
+          disabled: item.type === "Container" && item.itemsInside.length > 0,
+          comment:
+            item.type === "Container" && item.itemsInside.length > 0
+              ? "This item contains stuff. It cannot be converted into a non-container"
+              : undefined,
+        }
+      );
+    }
+    emptyFields.push({ type: FieldType.icon, icon: item.icon }, { type: FieldType.title, title: item.name });
     return new FieldInfoArgs(emptyFields);
   }, [item]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Form fields={fields} onDone={editItemCb} navigation={navigation} />
+      {fields == null ? null : <Form fields={fields} onDone={editItemCb} navigation={navigation} />}
+      <AlertModal
+        isVisible={isModalVisible}
+        title={`Delete ${item.name}?`}
+        text="Are you sure?"
+        reverse
+        confirmButton={{
+          text: "Yes",
+          onPress: () => {
+            setModalVisible(false);
+            deleteItemCb();
+          },
+        }}
+        cancelButton={{
+          text: "No",
+          onPress: () => {
+            setModalVisible(false);
+          },
+        }}
+      />
     </SafeAreaView>
   );
 };

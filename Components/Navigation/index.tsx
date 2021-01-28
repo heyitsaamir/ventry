@@ -6,7 +6,7 @@ import { RouteParams } from "./Routes";
 import { DetailsScreen } from "../../Pages/Details";
 import { ThemeContext } from "../../Theme/theme-context";
 import { AddItemScreen, EditItemScreen } from "../../Pages/AddItem";
-import { ItemDetails } from "../../Pages/ItemDetails";
+import { ItemDetailsScreen } from "../../Pages/ItemDetails";
 import { SearchScreen } from "../../Pages/Search";
 import { OnItemTap, SearchContext } from "./searchContext";
 import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
@@ -22,7 +22,7 @@ const MainNavigation = () => {
     <MainNavigator>
       <MainScreen name="Home" component={HomeScreen} />
       <MainScreen name="Details" component={DetailsScreen} />
-      <MainScreen name="ItemDetails" component={ItemDetails} />
+      <MainScreen name="ItemDetails" component={ItemDetailsScreen} />
       <MainScreen name="Explore" component={SearchScreen} />
     </MainNavigator>
   );

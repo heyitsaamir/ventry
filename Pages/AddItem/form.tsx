@@ -1,6 +1,7 @@
 import styled from "@emotion/native";
 import React, { useContext, useMemo, useState } from "react";
-import { Modal, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import Modal from "react-native-modal";
 import { Button, Icon, ListItem, ThemeContext } from "react-native-elements";
 import { ScrollView, Switch, TouchableOpacity } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
@@ -94,6 +95,7 @@ interface Props {
   fields: FieldInfoArgs;
   onDone: (fieldResults: FieldInfoArgs) => void;
   navigation: NavigatorProps;
+  footer?: React.ReactNode;
 }
 
 const useTextInputState = (initialValue: string = "") => {
@@ -111,7 +113,7 @@ const useBooleanInputState = (initialValue: boolean = false) => {
   return { value, onValueChange: setValue };
 };
 
-const Form = ({ fields, onDone, navigation }: Props) => {
+const Form = ({ fields, onDone, navigation, footer }: Props) => {
   const iconInputState = useTextInputState(fields.get(FieldType.icon)?.icon);
   const titleInputState = useTextInputState(fields.get(FieldType.title)?.title);
   const upcInputState = useTextInputState(fields.get(FieldType.upc)?.upc);
@@ -166,6 +168,10 @@ const Form = ({ fields, onDone, navigation }: Props) => {
     onDone(new FieldInfoArgs(fieldInfos));
   };
 
+  const containsItemFields =
+    fields.has(FieldType.title) || fields.has(FieldType.quantity) || fields.has(FieldType.upc);
+  const containsContainerFields = fields.has(FieldType.isContainer) || fields.has(FieldType.containerId);
+
   return (
     <ScrollView>
       {fields.has(FieldType.icon) && (
@@ -173,32 +179,38 @@ const Form = ({ fields, onDone, navigation }: Props) => {
           {...iconInputState}
           navigation={navigation}
           disabled={fields.isDisabled(FieldType.icon)}
+          isContainer={isContainerInputState.value}
         />
       )}
-      <InputContainer label="Item info">
-        {fields.has(FieldType.title) && (
-          <TitleSelector {...titleInputState} disabled={fields.isDisabled(FieldType.title)} />
-        )}
-        {fields.has(FieldType.quantity) && !isContainerInputState.value && (
-          <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
-        )}
-        {fields.has(FieldType.upc) && (
-          <UPCSelector {...upcInputState} disabled={fields.isDisabled(FieldType.upc)} />
-        )}
-      </InputContainer>
-      <InputContainer label="Container info">
-        {fields.has(FieldType.isContainer) && (
-          <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
-        )}
-        {fields.has(FieldType.containerId) && (
-          <ContainerIdSelector
-            {...containerIdInputState}
-            navigation={navigation}
-            disabled={fields.isDisabled(FieldType.containerId)}
-          />
-        )}
-      </InputContainer>
+      {containsItemFields && (
+        <InputContainer label="Item info">
+          {fields.has(FieldType.title) && (
+            <TitleSelector {...titleInputState} disabled={fields.isDisabled(FieldType.title)} />
+          )}
+          {fields.has(FieldType.quantity) && !isContainerInputState.value && (
+            <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
+          )}
+          {fields.has(FieldType.upc) && (
+            <UPCSelector {...upcInputState} disabled={fields.isDisabled(FieldType.upc)} />
+          )}
+        </InputContainer>
+      )}
+      {containsContainerFields && (
+        <InputContainer label="Container info">
+          {fields.has(FieldType.isContainer) && (
+            <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
+          )}
+          {fields.has(FieldType.containerId) && (
+            <ContainerIdSelector
+              {...containerIdInputState}
+              navigation={navigation}
+              disabled={fields.isDisabled(FieldType.containerId)}
+            />
+          )}
+        </InputContainer>
+      )}
       <SubmitButton title="Submit" onPress={onSubmit} />
+      {footer}
     </ScrollView>
   );
 };
@@ -226,8 +238,10 @@ const IconSelector = ({
   onChangeText,
   navigation,
   disabled,
+  isContainer,
 }: StringFieldSelector & {
   navigation: NavigatorProps;
+  isContainer: boolean;
 }) => {
   const { theme } = useContext(ThemeContext);
   const emojiContext = useContext(EmojiSelectorContext);
@@ -245,7 +259,15 @@ const IconSelector = ({
   return (
     <IconContainer backgroundColor={theme.colors.white} disabled={disabled}>
       <MainIconContainer backgroundColor={theme.colors.primary} onPress={navigateEmojiSelector}>
-        <MainIcon>{value || "🍋"}</MainIcon>
+        <MainIcon>
+          {value || (
+            <Icon
+              type={isContainer ? "font-awesome-5" : "octicon"}
+              name={isContainer ? "box-open" : "screen-full"}
+              color={theme.colors.black}
+            />
+          )}
+        </MainIcon>
       </MainIconContainer>
     </IconContainer>
   );
@@ -269,27 +291,19 @@ const TitleSelector = (props: StringFieldSelector) => {
           }}
         />
       </ListItem>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showScanner}
-        onRequestClose={() => {
+      <CameraInput
+        isVisible={showScanner}
+        dismiss={() => {
           setShowScanner(false);
         }}
-      >
-        <CameraInput
-          dismiss={() => {
+        input={{
+          type: "Text",
+          onTextScanned: (text) => {
+            props.onChangeText(text);
             setShowScanner(false);
-          }}
-          input={{
-            type: "Text",
-            onTextScanned: (text) => {
-              props.onChangeText(text);
-              setShowScanner(false);
-            },
-          }}
-        />
-      </Modal>
+          },
+        }}
+      />
     </>
   );
 };
@@ -312,27 +326,19 @@ const UPCSelector = (props: StringFieldSelector) => {
           }}
         />
       </ListItem>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showScanner}
-        onRequestClose={() => {
+      <CameraInput
+        isVisible={showScanner}
+        dismiss={() => {
           setShowScanner(false);
         }}
-      >
-        <CameraInput
-          dismiss={() => {
+        input={{
+          type: "Barcode",
+          onBarcodeScanned: (text) => {
+            props.onChangeText(text);
             setShowScanner(false);
-          }}
-          input={{
-            type: "Barcode",
-            onBarcodeScanned: (text) => {
-              props.onChangeText(text);
-              setShowScanner(false);
-            },
-          }}
-        />
-      </Modal>
+          },
+        }}
+      />
     </>
   );
 };
@@ -424,7 +430,7 @@ const MainIconContainer = styled(TouchableOpacity)<{ backgroundColor: string }>(
   shadowColor: "rgba(0,0,0, .4)",
   shadowOffset: { height: 1, width: 1 },
   shadowOpacity: 1,
-  shadowRadius: 1,
+  shadowRadius: 3,
 }));
 
 const MainIcon = styled(Text)({
