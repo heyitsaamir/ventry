@@ -1,7 +1,8 @@
 import { InventoryState } from './inventory';
+import { StateWithHistory as UndoableState } from 'redux-undo';
 
 export interface State {
-  inventory: InventoryState
+  inventory: UndoableState<InventoryState>
 }
 
 export type Id = string;

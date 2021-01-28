@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import Toast from "react-native-toast-message";
 import { ThemeProvider, Text } from "react-native-elements";
 import { AppNavigator } from "./Components/Navigation";
 
@@ -16,6 +17,7 @@ export default () => {
           <AppNavigator />
         </PersistGate>
       </Provider>
+      <Toast ref={(ref) => Toast.setRef(ref)} />
     </ThemeProvider>
   );
 };

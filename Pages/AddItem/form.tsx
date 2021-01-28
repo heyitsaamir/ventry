@@ -373,7 +373,9 @@ const ContainerIdSelector = ({
   disabled,
 }: StringFieldSelector & { navigation: NavigatorProps }) => {
   const searchContext = useContext(SearchContext);
-  const containers = useSelector<State, InventoryState["items"]>((state: State) => state.inventory.items);
+  const containers = useSelector<State, InventoryState["items"]>(
+    (state: State) => state.inventory.present.items
+  );
   const parent = containers[value];
   const navigateSearch = () => {
     searchContext.setOnItemTap((item) => {

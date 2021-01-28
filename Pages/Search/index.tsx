@@ -25,7 +25,7 @@ export const SearchScreen = ({
 }: Props) => {
   const { onItemTap } = useContext(SearchContext);
   const items = useSelector<State, Item[]>((state) =>
-    Object.values(state.inventory.items).filter((item) => {
+    Object.values(state.inventory.present.items).filter((item) => {
       if (containersOnly === true) {
         return item.type === "Container";
       }

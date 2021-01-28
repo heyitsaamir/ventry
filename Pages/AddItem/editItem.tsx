@@ -10,6 +10,8 @@ import { useAppDispatch } from "../../Store";
 import { editItem, deleteItem } from "../../Store/inventory";
 import { Item, State } from "../../Store/types";
 import Form, { FieldType, FieldInfos, FieldInfoArgs } from "./form";
+import Toast from "react-native-toast-message";
+import { ActionCreators } from "redux-undo";
 
 interface Props extends ScreenProps<"EditItem"> {
   navigation: NavigatorProps<"EditItem">;
@@ -17,7 +19,7 @@ interface Props extends ScreenProps<"EditItem"> {
 
 export const EditItemScreen = ({ route, ...restProps }: Props) => {
   const itemId = route.params!.itemId!;
-  const item = useSelector<State, Item>((state: State) => state.inventory.items[itemId]);
+  const item = useSelector<State, Item>((state: State) => state.inventory.present.items[itemId]);
   return item ? <EditItem item={item} {...restProps} /> : <Text>Does not exist</Text>;
 };
 
@@ -70,6 +72,16 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
   );
   const deleteItemCb = useCallback(() => {
     dispatch(deleteItem({ itemId: item.id }));
+    Toast.show({
+      text1: `${item.name} deleted`,
+      text2: "Tap to undo",
+      type: "success",
+      position: "bottom",
+      onPress: () => {
+        dispatch(ActionCreators.undo());
+        Toast.hide();
+      },
+    });
     navigation.dispatch(removeItemFromNavStack(item.id));
   }, [dispatch, item, navigation]);
 

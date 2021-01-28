@@ -17,20 +17,20 @@ interface Props extends ScreenProps<"ItemDetails"> {
 }
 
 export const ItemDetailsScreen = ({ route }: Props) => {
-  const item = useSelector<State, Item>((state) => state.inventory.items[route.params.itemId]);
+  const item = useSelector<State, Item>((state) => state.inventory.present.items[route.params.itemId]);
   return item ? <ItemDetails item={item} /> : <Text>Does not exist</Text>;
 };
 
 const ItemDetails = ({ item }: { item: Item }) => {
   const parentPath = useSelector<State, string[]>((state) => {
     if (item) {
-      return getParentPath(item, state.inventory);
+      return getParentPath(item, state.inventory.present);
     }
     return [];
   });
   const itemsInside = useSelector<State, number>((state) => {
     if (item && item.type === "Container") {
-      return getNumberOfItemsInside(item, state.inventory);
+      return getNumberOfItemsInside(item, state.inventory.present);
     }
     return 0;
   });
