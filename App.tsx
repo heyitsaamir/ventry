@@ -4,12 +4,13 @@ import { AppNavigator } from "./Components/Navigation";
 
 import { Provider } from "react-redux";
 import Store from "./Store";
-import { OnItemTap, SearchContext } from "./Components/Navigation/searchContext";
 import { PersistGate } from "redux-persist/integration/react";
+
+const theme = { colors: { error: "#c4352b" } };
 
 export default () => {
   return (
-    <ThemeProvider>
+    <ThemeProvider theme={theme}>
       <Provider store={Store.store}>
         <PersistGate loading={<Text>Loading!</Text>} persistor={Store.persistor}>
           <AppNavigator />

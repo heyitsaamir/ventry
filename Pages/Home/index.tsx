@@ -3,8 +3,9 @@ import { SafeAreaView, StyleSheet, View } from "react-native";
 import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
 import { NavigatorProps } from "../../Components/Navigation/Routes";
-import { Button, Input, Text } from "react-native-elements";
+import { Button, Image, Input, Text } from "react-native-elements";
 import { SearchContext } from "../../Components/Navigation/searchContext";
+import { useAssets } from "expo-asset";
 
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
@@ -18,6 +19,7 @@ interface Props {
 export const HomeScreen = ({ navigation }: Props) => {
   const themeContext = React.useContext(ThemeContext);
   const searchContext = React.useContext(SearchContext);
+  const [assets, error] = useAssets([require("../../Components/assets/logo.png")]);
 
   const largeInputState = useInputState();
   const navigateSearch = () => {
@@ -35,9 +37,22 @@ export const HomeScreen = ({ navigation }: Props) => {
     navigation.navigate("ItemDetails", { itemId: "" });
   };
 
+  if (!assets) {
+    return <Text>assets: {JSON.stringify(assets)}</Text>;
+  }
+
+  if (error) {
+    return <Text>err:{error.message}</Text>;
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <HorizontalSplit>
+        <Image
+          source={{ uri: assets[0].localUri }}
+          style={{ height: 100, width: 100 }}
+          resizeMode={"cover"}
+        />
         <Input placeholder="Search" {...largeInputState} />
       </HorizontalSplit>
       <HorizontalSplit>
