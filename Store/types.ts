@@ -27,3 +27,10 @@ export interface ContainerItem extends BaseItem {
 }
 
 export type Item = NonContainerItem | ContainerItem;
+
+export interface HistoryItem {
+  id: string;
+  itemId: string;
+  summary: string[];
+  createdAtUTC: string;
+}

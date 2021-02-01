@@ -1,14 +1,22 @@
 import uuid from 'react-native-uuid';
-import { ActionCreatorWithPayload, createReducer, createSlice, PayloadAction, SliceCaseReducers, } from '@reduxjs/toolkit'
-import { Item, ContainerItem, NonContainerItem } from './types';
+import { ActionCreatorWithPayload, createSlice, PayloadAction, SliceCaseReducers, } from '@reduxjs/toolkit'
+import { Item, HistoryItem, ContainerItem, NonContainerItem } from './types';
 
 export interface InventoryState {
   items: { [id: string]: Item }
+  historyItems: { [id: string]: HistoryItem }
+  historyIdByItemId: { [itemId: string]: string[] }
 }
 
 type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'>, parentId: string };
 type EditItemParams = { itemId: string, updatedItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside"> | Omit<NonContainerItem, 'id' | 'createdAtUTC'> };
 type DeleteItemParams = { itemId: string, includeContents?: boolean };
+
+export type ActionTypes = {
+  AddItemParams: AddItemParams,
+  EditItemParams: EditItemParams,
+  DeleteItemParams: DeleteItemParams,
+}
 
 const initialState: InventoryState = {
   items: {
@@ -44,7 +52,9 @@ const initialState: InventoryState = {
       parentId: 'kitchen-id',
       quantity: 4
     }
-  }
+  },
+  historyItems: {},
+  historyIdByItemId: {},
 };
 
 export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<InventoryState>>({
@@ -76,6 +86,8 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
       if (parent.type !== 'Container') throw new Error('The parent id is not a container!')
       parent.itemsInside = parent.itemsInside.concat(itemToAdd.id);
       state.items[itemToAdd.id] = itemToAdd;
+
+      addHistoryItem(state, itemToAdd.id, [`Created under ${parent.name}`]);
     },
     editItem: (state, action: PayloadAction<EditItemParams>) => {
       const { itemId, updatedItem } = action.payload;
@@ -91,6 +103,8 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           name: updatedItem.name,
           icon: updatedItem.icon
         }
+        const differences = evaluateSimpleDifferenceInObject(originalItem, state.items['']);
+        addHistoryItem(state, itemId, differences)
         return;
       }
 
@@ -100,12 +114,14 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
       if (updatedItem.type === 'Container' && originalItem.type === 'NonContainer' && originalItem.quantity > 1) {
         throw new Error('There is more than 1 item. Try convering one to a container');
       }
+      const differences = evaluateSimpleDifferenceInObject(originalItem, updatedItem as Item);
       if (originalItem.parentId !== updatedItem.parentId) {
         // update parent
         const originalParent = state.items[originalItem.parentId] as ContainerItem;
         originalParent.itemsInside = originalParent.itemsInside.filter(itemIdInside => itemIdInside !== itemId);
         const newParent = state.items[updatedItem.parentId] as ContainerItem;
         newParent.itemsInside.push(itemId);
+        differences.push(`Moved from ${originalParent.name} to ${newParent.name}`);
       }
       if (updatedItem.type === 'Container') {
         state.items[itemId] = {
@@ -121,6 +137,8 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           id: itemId,
         }
       }
+
+      addHistoryItem(state, itemId, differences)
     },
     deleteItem: (state, action: PayloadAction<DeleteItemParams>) => {
       deleteItemRecursive(state, action.payload);
@@ -156,5 +174,43 @@ const deleteItemRecursive = (state: InventoryState, payload: DeleteItemParams) =
     }
   }
 
+  const historyItemIds = state.historyIdByItemId[itemId];
+  historyItemIds.forEach(id => delete state.historyItems[id]);
+  delete state.historyIdByItemId[itemId];
+
   delete state.items[itemId];
+}
+
+const addHistoryItemIfNeeded = (state: InventoryState, itemId: string) => {
+  if (state.historyIdByItemId[itemId] == null) {
+    state.historyIdByItemId[itemId] = []
+  }
+}
+
+const addHistoryItem = (state: InventoryState, itemId: string, summary: string[]) => {
+  addHistoryItemIfNeeded(state, itemId);
+  const history: HistoryItem = {
+    id: uuid.v4(),
+    itemId,
+    summary,
+    createdAtUTC: (new Date()).toUTCString(),
+  }
+  state.historyItems[history.id] = history;
+  state.historyIdByItemId[itemId].push(history.id);
+}
+
+const keysToCheck: (keyof ContainerItem | keyof NonContainerItem)[] = ['name', 'type', 'upc', 'quantity'];
+const evaluateSimpleDifferenceInObject = (originalItem: Item, newItem: Item): string[] => {
+  return Object.keys(originalItem).reduce((differences, key: keyof ContainerItem | keyof NonContainerItem) => {
+    if (keysToCheck.includes(key) && originalItem[key] !== newItem[key]) {
+      if (originalItem[key] != null && newItem[key] != null) {
+        differences.push(`Changed ${key} from ${originalItem[key]} to ${newItem[key]}`);
+      } else if (originalItem[key] != null) {
+        differences.push(`Removed ${key} from ${originalItem[key]} to ${newItem[key]}`);
+      } else if (newItem[key] != null) {
+        differences.push(`Changed ${key} to ${newItem[key]}`);
+      }
+    }
+    return differences;
+  }, [] as string[]);
 }

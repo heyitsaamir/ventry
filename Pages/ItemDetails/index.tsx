@@ -1,43 +1,38 @@
 import React, { useContext, useMemo } from "react";
-import { FlatList, SafeAreaView, View } from "react-native";
+import { Animated, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
 import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { Icon, Text, ThemeContext } from "react-native-elements";
+import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
 import InfoTag from "../../Components/InfoTag";
 import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
 import { ItemCard } from "../../Components/ItemListCard";
+import { SceneMap } from "react-native-tab-view";
+import { CollapsibleTabView, useCollapsibleScene } from "react-native-collapsible-tab-view";
+import { HistoryItemCard } from "../../Components/ItemListCard/historyItem";
+import dateFormat from "dateformat";
+
+type Route = {
+  key: "first" | "second";
+  title: string;
+};
 
 interface Props extends ScreenProps<"ItemDetails"> {
   navigation: NavigatorProps<"ItemDetails">;
 }
 
 export const ItemDetailsScreen = ({ route }: Props) => {
-  const item = useSelector<State, Item>((state) => state.inventory.present.items[route.params.itemId]);
-  return item ? <ItemDetails item={item} /> : <Text>Does not exist</Text>;
-};
-
-const ItemDetails = ({ item }: { item: Item }) => {
-  const parentPath = useSelector<State, string[]>((state) => {
-    if (item) {
-      return getParentPath(item, state.inventory.present);
-    }
-    return [];
-  });
-  const itemsInside = useSelector<State, number>((state) => {
-    if (item && item.type === "Container") {
-      return getNumberOfItemsInside(item, state.inventory.present);
-    }
-    return 0;
-  });
-
+  const itemId = route.params.itemId;
+  const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
+  const [index, setIndex] = React.useState(0);
   const nav = useNav();
   const { theme } = useContext(ThemeContext);
   const navButtons = useMemo(() => {
+    if (!item) return [];
     const navButtons: RightNavButton[] = [];
     navButtons.push({
       name: "edit",
@@ -57,45 +52,114 @@ const ItemDetails = ({ item }: { item: Item }) => {
     title: item.name,
     rightButtons: navButtons,
   });
-
+  const { sceneMap, routes } = useMemo(() => {
+    if (item.type === "Container") {
+      const ItemDetailsScene = () => <ItemDetails item={item} navigation={nav} />;
+      const ItemHistoryScene = () => <ItemHistory item={item} navigation={nav} />;
+      return {
+        sceneMap: SceneMap({
+          first: ItemDetailsScene,
+          second: ItemHistoryScene,
+        }),
+        routes: [
+          { key: "first", title: "Details" },
+          { key: "second", title: "History" },
+        ] as Route[],
+      };
+    } else {
+      const ItemHistoryScene = () => <ItemHistory item={item} navigation={nav} />;
+      return {
+        sceneMap: SceneMap({
+          second: ItemHistoryScene,
+        }),
+        routes: [{ key: "second", title: "History" }] as Route[],
+      };
+    }
+  }, [itemId, nav, item.type]);
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <FlatList
-        data={item.type === "Container" ? item.itemsInside : []}
-        renderItem={({ item: itemId }) => (
-          <ItemCard itemId={itemId} onTap={(item) => nav.push("ItemDetails", { itemId: item.id })} />
-        )}
-        keyExtractor={(itemId) => itemId}
-        stickyHeaderIndices={[0]}
-        ListHeaderComponent={
-          <>
-            <TitleContainer style={{ backgroundColor: theme.colors.white }}>
-              <ItemIconContainer size="md" isContainer={item.type === "Container"} icon={item.icon} />
-              <TitleContent>
-                <Text h3 style={{ fontWeight: "bold" }}>
-                  {item.name}
-                </Text>
-                <Text>
-                  {new Date(Date.parse(item.createdAtUTC)).toLocaleDateString("en-us", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </Text>
-                {item.id !== "" && (
-                  <ContainerPath theme={theme}>
-                    <PathIcon type="octicon" name="chevron-right" size={12} />
-                    {parentPath.join(" / ")}
-                  </ContainerPath>
-                )}
-              </TitleContent>
-            </TitleContainer>
-            <InfoBar item={item} contains={itemsInside} />
-          </>
-        }
-      />
+      {item ? (
+        <CollapsibleTabView<Route>
+          navigationState={{ index, routes }}
+          renderScene={sceneMap}
+          onIndexChange={setIndex}
+          renderHeader={() => <ItemHeader item={item} theme={theme} />} // optional
+          headerHeight={145}
+          tabBarProps={{
+            tabStyle: { backgroundColor: theme.colors.primary },
+            pressOpacity: 0.8,
+            pressColor: theme.colors.primary,
+          }}
+        />
+      ) : (
+        <Text>Does not exist</Text>
+      )}
     </SafeAreaView>
+  );
+};
+
+const ItemDetails = ({ item, navigation }: { item: Item; navigation: NavigatorProps }) => {
+  const scrollPropsAndRef = useCollapsibleScene<Route>("first");
+  return (
+    <Animated.FlatList
+      {...scrollPropsAndRef}
+      data={item.type === "Container" ? item.itemsInside : []}
+      renderItem={({ item: itemId }) => (
+        <ItemCard itemId={itemId} onTap={(item) => navigation.push("ItemDetails", { itemId: item.id })} />
+      )}
+      keyExtractor={(itemId: string) => itemId}
+    />
+  );
+};
+
+const ItemHistory = ({ item }: { item: Item; navigation: NavigatorProps }) => {
+  const historyItemIds = useSelector<State, string[]>((state) => {
+    const itemId = item.id;
+    return state.inventory.present.historyIdByItemId[itemId].slice();
+  });
+  const scrollPropsAndRef = useCollapsibleScene<Route>("second");
+  return (
+    <Animated.FlatList
+      {...scrollPropsAndRef}
+      data={(historyItemIds ?? []).reverse()}
+      renderItem={({ item: historyItemId }) => <HistoryItemCard historyItemId={historyItemId} />}
+      keyExtractor={(itemId: string) => itemId}
+    />
+  );
+};
+
+const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
+  const parentPath = useSelector<State, string[]>((state) => {
+    if (item) {
+      return getParentPath(item, state.inventory.present);
+    }
+    return [];
+  });
+  const itemsInside = useSelector<State, number>((state) => {
+    if (item && item.type === "Container") {
+      return getNumberOfItemsInside(item, state.inventory.present);
+    }
+    return 0;
+  });
+  return (
+    <>
+      <TitleContainer pointerEvents="none" style={{ backgroundColor: theme.colors.white }}>
+        <ItemIconContainer size="md" isContainer={item.type === "Container"} icon={item.icon} />
+        <TitleContent>
+          <Text h3 style={{ fontWeight: "bold" }}>
+            {item.name}
+          </Text>
+          <Text>{dateFormat(item.createdAtUTC, "ddd mmm dS 'yy")}</Text>
+          {item.id !== "" && (
+            <ContainerPath theme={theme}>
+              <PathIcon type="octicon" name="chevron-right" size={12} />
+              {parentPath.join(" / ")}
+            </ContainerPath>
+          )}
+        </TitleContent>
+      </TitleContainer>
+      <InfoBar item={item} contains={itemsInside} />
+    </>
   );
 };
 

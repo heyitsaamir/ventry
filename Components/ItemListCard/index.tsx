@@ -23,7 +23,7 @@ export const ItemCard = ({ itemId, onTap }: Props) => {
   }
 
   return (
-    <ListItem onPress={() => onTap(item)}>
+    <ListItem bottomDivider onPress={() => onTap(item)}>
       <ItemIcon icon={item.icon} size="sm" isContainer={item.type === "Container"} />
       <ListItem.Content>
         <ListItem.Title>{item.name}</ListItem.Title>

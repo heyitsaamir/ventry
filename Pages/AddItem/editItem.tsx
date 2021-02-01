@@ -29,60 +29,77 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
   const dispatch = useAppDispatch();
   const editItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
-      0;
-      if (!item) return;
-      const isContainer = fieldInfos.get(FieldType.isContainer)?.isContainer;
-      const name = fieldInfos.get(FieldType.title)?.title;
-      const quantity = fieldInfos.get(FieldType.quantity)?.quantity;
-      const upc = fieldInfos.get(FieldType.upc)?.upc;
-      const icon = fieldInfos.get(FieldType.icon)?.icon;
-      const containerId = fieldInfos.get(FieldType.containerId)?.containerId;
-      if (!isContainer) {
-        dispatch(
-          editItem({
-            updatedItem: {
-              type: "NonContainer",
-              name,
-              quantity,
-              upc,
-              icon,
-              parentId: containerId,
-            },
-            itemId: item.id,
-          })
-        );
-      } else {
-        dispatch(
-          editItem({
-            updatedItem: {
-              type: "Container",
-              name,
-              upc,
-              icon,
-              parentId: containerId,
-            },
-            itemId: item.id,
-          })
-        );
-      }
+      try {
+        if (!item) return;
+        const isContainer = fieldInfos.get(FieldType.isContainer)?.isContainer;
+        const name = fieldInfos.get(FieldType.title)?.title;
+        const quantity = fieldInfos.get(FieldType.quantity)?.quantity;
+        const upc = fieldInfos.get(FieldType.upc)?.upc;
+        const icon = fieldInfos.get(FieldType.icon)?.icon;
+        const containerId = fieldInfos.get(FieldType.containerId)?.containerId;
+        if (!isContainer) {
+          dispatch(
+            editItem({
+              updatedItem: {
+                type: "NonContainer",
+                name,
+                quantity,
+                upc,
+                icon,
+                parentId: containerId,
+              },
+              itemId: item.id,
+            })
+          );
+        } else {
+          dispatch(
+            editItem({
+              updatedItem: {
+                type: "Container",
+                name,
+                upc,
+                icon,
+                parentId: containerId,
+              },
+              itemId: item.id,
+            })
+          );
+        }
 
-      navigation.goBack();
+        navigation.goBack();
+      } catch (error) {
+        Toast.show({
+          text1: `Error`,
+          text2: error.message,
+          type: "error",
+          position: "bottom",
+        });
+      }
     },
     [dispatch, item, navigation]
   );
   const deleteItemCb = useCallback(() => {
-    dispatch(deleteItem({ itemId: item.id }));
-    Toast.show({
-      text1: `${item.name} deleted`,
-      text2: "Tap to undo",
-      type: "success",
-      position: "bottom",
-      onPress: () => {
-        dispatch(ActionCreators.undo());
-        Toast.hide();
-      },
-    });
-    navigation.dispatch(removeItemFromNavStack(item.id));
+    try {
+      dispatch(deleteItem({ itemId: item.id }));
+      Toast.show({
+        text1: `${item.name} deleted`,
+        text2: "Tap to undo",
+        type: "success",
+        position: "bottom",
+        onPress: () => {
+          dispatch(ActionCreators.undo());
+          Toast.hide();
+        },
+      });
+      navigation.dispatch(removeItemFromNavStack(item.id));
+    } catch (error) {
+      Toast.show({
+        text1: `Error`,
+        text2: error.message,
+        type: "error",
+        position: "bottom",
+      });
+    }
   }, [dispatch, item, navigation]);
 
   const navButtons = useMemo(() => {
