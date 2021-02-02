@@ -1,13 +1,12 @@
 import React, { useContext, useEffect } from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
-import { ThemeContext } from "../../Theme/theme-context";
 import styled from "@emotion/native";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
 import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
 import { useFuse } from "../../lib/fuse/useFuse";
 import { SearchList } from "./list";
-import { SearchBar } from "react-native-elements";
+import { Icon, SearchBar, ThemeContext } from "react-native-elements";
 import { SearchContext } from "../../Components/Navigation/searchContext";
 
 const useInputState = (initialValue = "") => {
@@ -19,19 +18,15 @@ interface Props extends ScreenProps<"Search"> {
   navigation: NavigatorProps<"Search">;
 }
 
-export const SearchScreen = ({
-  navigation,
-  route: { params: { containersOnly } = { containersOnly: false } },
-}: Props) => {
-  const { onItemTap } = useContext(SearchContext);
-  const items = useSelector<State, Item[]>((state) =>
-    Object.values(state.inventory.present.items).filter((item) => {
-      if (containersOnly === true) {
-        return item.type === "Container";
-      }
-      return true;
-    })
-  );
+export const SearchScreen = ({ navigation }: Props) => {
+  const { onItemTap, predicate } = useContext(SearchContext);
+  const items = useSelector<State, Item[]>((state) => {
+    if (predicate) {
+      return predicate(state.inventory.present.items);
+    } else {
+      return Object.values(state.inventory.present.items);
+    }
+  });
   const fuse = useFuse(items, {
     keys: ["name", "upc"],
     threshold: 0.5,
@@ -40,11 +35,19 @@ export const SearchScreen = ({
   });
 
   const searchInputState = useInputState();
+  const { theme } = useContext(ThemeContext);
   const result = fuse.search(searchInputState.value);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <SearchBar platform="default" placeholder="Search" {...searchInputState} />
+      <SearchBar
+        placeholder="Search"
+        {...searchInputState}
+        placeholderTextColor={theme.colors.border}
+        inputStyle={{ color: theme.colors.background }}
+        searchIcon={<Icon type="material" name="search" color={theme.colors.border} />}
+        cancelButtonProps={{ color: theme.colors.border }}
+      />
       <SearchList
         items={searchInputState.value === "" ? items : result.map((r) => r.item)}
         onTap={onItemTap}
@@ -52,15 +55,3 @@ export const SearchScreen = ({
     </SafeAreaView>
   );
 };
-
-const HorizontalSplit = styled(View)({
-  flex: 1,
-  alignItems: "center",
-  justifyContent: "center",
-});
-
-const styles = StyleSheet.create({
-  button: {
-    marginVertical: 10,
-  },
-});

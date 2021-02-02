@@ -10,8 +10,9 @@ import { NavigatorProps } from "../../Components/Navigation/Routes";
 import { SearchContext } from "../../Components/Navigation/searchContext";
 import NumberInput from "../../Components/NumberInput";
 import { InventoryState } from "../../Store/inventory";
-import { State } from "../../Store/types";
+import { ContainerItem, Item, State } from "../../Store/types";
 import CameraInput from "./cameraInput";
+import { IsContainer } from "../../lib/modelUtilities/itemUtils";
 
 export enum FieldType {
   icon,
@@ -50,6 +51,7 @@ interface IsContainerField extends FieldInfo<FieldType.isContainer> {
 
 interface ContainerIdField extends FieldInfo<FieldType.containerId> {
   containerId?: string;
+  itemId: string | undefined;
 }
 
 export type FieldInfos =
@@ -205,6 +207,7 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
               {...containerIdInputState}
               navigation={navigation}
               disabled={fields.isDisabled(FieldType.containerId)}
+              itemId={fields.get(FieldType.containerId).itemId}
             />
           )}
         </InputContainer>
@@ -371,7 +374,8 @@ const ContainerIdSelector = ({
   onChangeText,
   navigation,
   disabled,
-}: StringFieldSelector & { navigation: NavigatorProps }) => {
+  itemId,
+}: StringFieldSelector & { navigation: NavigatorProps; itemId: string | undefined }) => {
   const searchContext = useContext(SearchContext);
   const containers = useSelector<State, InventoryState["items"]>(
     (state: State) => state.inventory.present.items
@@ -380,12 +384,35 @@ const ContainerIdSelector = ({
   const navigateSearch = () => {
     searchContext.setOnItemTap((item) => {
       onChangeText(item.id);
+      searchContext.setOnItemTap(undefined);
+      searchContext.setPredicate(undefined);
       navigation.goBack();
     });
+    searchContext.setPredicate((items) => {
+      // Only allow containers that are not children of this item
+      // otherwise we'll get cycles
+      const containersOnly = Object.values(items).filter(IsContainer);
+      if (itemId == null) {
+        return containersOnly;
+      }
 
-    navigation.navigate("Search", {
-      containersOnly: true,
+      const currentItem = items[itemId];
+      if (!IsContainer(currentItem)) return containersOnly;
+
+      const containerDescendantsSet = new Set<string>();
+      const recursiveSearch = (item: Item) => {
+        if (!IsContainer(item)) return;
+        containerDescendantsSet.add(item.id);
+        item.itemsInside.forEach((itemId) => {
+          const itemInside = items[itemId];
+          recursiveSearch(itemInside);
+        });
+      };
+      recursiveSearch(currentItem);
+      return containersOnly.filter((container) => !containerDescendantsSet.has(container.id));
     });
+
+    navigation.navigate("Search");
   };
 
   return (

@@ -3,6 +3,7 @@ import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
 import { Text, ListItem } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
+import { IsContainer } from "../../lib/modelUtilities/itemUtils";
 
 interface Props {
   itemId: string;
@@ -14,7 +15,7 @@ export const ItemCard = ({ itemId, onTap }: Props) => {
 
   let category: string;
   let amt: string;
-  if (item.type === "Container") {
+  if (IsContainer(item)) {
     category = "Contains: ";
     amt = `${item.itemsInside.length} items`;
   } else {
@@ -24,7 +25,7 @@ export const ItemCard = ({ itemId, onTap }: Props) => {
 
   return (
     <ListItem bottomDivider onPress={() => onTap(item)}>
-      <ItemIcon icon={item.icon} size="sm" isContainer={item.type === "Container"} />
+      <ItemIcon icon={item.icon} size="sm" isContainer={IsContainer(item)} />
       <ListItem.Content>
         <ListItem.Title>{item.name}</ListItem.Title>
         <ListItem.Subtitle>
@@ -37,7 +38,7 @@ export const ItemCard = ({ itemId, onTap }: Props) => {
         {amt}
       </Text>
 
-      {item.type === "Container" && <ListItem.Chevron />}
+      {IsContainer(item) && <ListItem.Chevron />}
     </ListItem>
   );
 };

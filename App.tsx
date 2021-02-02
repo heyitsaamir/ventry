@@ -6,8 +6,7 @@ import { AppNavigator } from "./Components/Navigation";
 import { Provider } from "react-redux";
 import Store from "./Store";
 import { PersistGate } from "redux-persist/integration/react";
-
-const theme = { colors: { error: "#c4352b" } };
+import { theme } from "./Theme/theme";
 
 export default () => {
   return (

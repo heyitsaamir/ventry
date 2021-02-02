@@ -17,7 +17,7 @@ const NumberInputWrapper = (props: Props) => {
   return (
     <View>
       {label && <Text>{label}</Text>}
-      <InputSpinner color={theme.colors.primary} {...restProps} />
+      <InputSpinner color={theme.colors.secondary} {...restProps} />
     </View>
   );
 };

@@ -15,9 +15,7 @@ export type RouteParams = {
     itemId: string
   }
   Main: undefined;
-  Search: {
-    containersOnly?: boolean;
-  },
+  Search: undefined;
   Explore: {
     containersOnly?: boolean;
   },

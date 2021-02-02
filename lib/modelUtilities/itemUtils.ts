@@ -1,5 +1,5 @@
 import { InventoryState } from "../../Store/inventory";
-import { ContainerItem, Item } from "../../Store/types";
+import { ContainerItem, Item, NonContainerItem } from "../../Store/types";
 
 export const getParentPath = (item: Item, inventoryState: InventoryState) => {
   let container = item;
@@ -12,9 +12,12 @@ export const getParentPath = (item: Item, inventoryState: InventoryState) => {
   return parentNames;
 }
 
+export const IsContainer = (item: Item): item is ContainerItem => item.type === 'Container';
+export const IsNonContainer = (item: Item): item is NonContainerItem => item.type === 'NonContainer';
+
 export const getNumberOfItemsInside = (item: ContainerItem, inventoryState: InventoryState) => {
   return item.itemsInside.map((itemId) => inventoryState.items[itemId]).reduce((total, item) => {
-    if (item.type === 'NonContainer') {
+    if (IsNonContainer(item)) {
       return total + item.quantity;
     } else {
       return total + 1 + getNumberOfItemsInside(item, inventoryState);

@@ -6,7 +6,7 @@ import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
 import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
-import { getNumberOfItemsInside, getParentPath } from "../../lib/modelUtilities/itemUtils";
+import { getNumberOfItemsInside, getParentPath, IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
 import InfoTag from "../../Components/InfoTag";
 import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
@@ -39,7 +39,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
       type: "material",
       onPress: () => nav.navigate("EditItem", { itemId: item.id }),
     });
-    if (item.type === "Container") {
+    if (IsContainer(item)) {
       navButtons.push({
         name: "add",
         type: "material",
@@ -53,9 +53,9 @@ export const ItemDetailsScreen = ({ route }: Props) => {
     rightButtons: navButtons,
   });
   const { sceneMap, routes } = useMemo(() => {
-    if (item.type === "Container") {
-      const ItemDetailsScene = () => <ItemDetails item={item} navigation={nav} />;
-      const ItemHistoryScene = () => <ItemHistory item={item} navigation={nav} />;
+    if (IsContainer(item)) {
+      const ItemDetailsScene = () => <ItemDetails itemId={itemId} navigation={nav} />;
+      const ItemHistoryScene = () => <ItemHistory itemId={itemId} navigation={nav} />;
       return {
         sceneMap: SceneMap({
           first: ItemDetailsScene,
@@ -98,12 +98,13 @@ export const ItemDetailsScreen = ({ route }: Props) => {
   );
 };
 
-const ItemDetails = ({ item, navigation }: { item: Item; navigation: NavigatorProps }) => {
+const ItemDetails = ({ itemId, navigation }: { itemId: string; navigation: NavigatorProps }) => {
   const scrollPropsAndRef = useCollapsibleScene<Route>("first");
+  const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
   return (
     <Animated.FlatList
       {...scrollPropsAndRef}
-      data={item.type === "Container" ? item.itemsInside : []}
+      data={IsContainer(item) ? item.itemsInside : []}
       renderItem={({ item: itemId }) => (
         <ItemCard itemId={itemId} onTap={(item) => navigation.push("ItemDetails", { itemId: item.id })} />
       )}
@@ -112,10 +113,9 @@ const ItemDetails = ({ item, navigation }: { item: Item; navigation: NavigatorPr
   );
 };
 
-const ItemHistory = ({ item }: { item: Item; navigation: NavigatorProps }) => {
+const ItemHistory = ({ itemId }: { itemId: string; navigation: NavigatorProps }) => {
   const historyItemIds = useSelector<State, string[]>((state) => {
-    const itemId = item.id;
-    return state.inventory.present.historyIdByItemId[itemId].slice();
+    return (state.inventory.present.historyIdByItemId[itemId] ?? []).slice();
   });
   const scrollPropsAndRef = useCollapsibleScene<Route>("second");
   return (
@@ -136,7 +136,7 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
     return [];
   });
   const itemsInside = useSelector<State, number>((state) => {
-    if (item && item.type === "Container") {
+    if (item && IsContainer(item)) {
       return getNumberOfItemsInside(item, state.inventory.present);
     }
     return 0;
@@ -144,7 +144,7 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
   return (
     <>
       <TitleContainer pointerEvents="none" style={{ backgroundColor: theme.colors.white }}>
-        <ItemIconContainer size="md" isContainer={item.type === "Container"} icon={item.icon} />
+        <ItemIconContainer size="md" isContainer={IsContainer(item)} icon={item.icon} />
         <TitleContent>
           <Text h3 style={{ fontWeight: "bold" }}>
             {item.name}

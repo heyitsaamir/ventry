@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer, Theme } from "@react-navigation/native";
 import { HomeScreen } from "../../Pages/Home";
 import { createStackNavigator } from "@react-navigation/stack";
 import { RouteParams } from "./Routes";
 import { DetailsScreen } from "../../Pages/Details";
-import { ThemeContext } from "../../Theme/theme-context";
 import { AddItemScreen, EditItemScreen } from "../../Pages/AddItem";
 import { ItemDetailsScreen } from "../../Pages/ItemDetails";
 import { SearchScreen } from "../../Pages/Search";
-import { OnItemTap, SearchContext } from "./searchContext";
+import { ItemPredicate, OnItemTap, SearchContext } from "./searchContext";
 import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
 import { EmojiSelectorScreen } from "../../Pages/EmojiSelector";
+import { ThemeContext } from "react-native-elements";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
 const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
@@ -43,13 +43,14 @@ function useSettableCallback<T extends Function | undefined>(callback: T): [T, (
 export const AppNavigator = () => {
   const [onItemTap, setOnItemTap] = useSettableCallback<OnItemTap | undefined>(undefined);
   const [onEmojiTap, setOnEmojiTap] = useSettableCallback<OnEmojiTap | undefined>(undefined);
+  const [predicate, setPredicate] = useSettableCallback<ItemPredicate | undefined>(undefined);
 
   const themeContext = React.useContext(ThemeContext);
 
   return (
-    <SearchContext.Provider value={{ onItemTap, setOnItemTap }}>
+    <SearchContext.Provider value={{ onItemTap, setOnItemTap, predicate, setPredicate }}>
       <EmojiSelectorContext.Provider value={{ onEmojiTap, setOnEmojiTap }}>
-        <NavigationContainer theme={themeContext.theme === "dark" ? DarkTheme : DefaultTheme}>
+        <NavigationContainer theme={{ ...themeContext.theme, dark: false } as Theme}>
           <RootNavigator mode="modal">
             <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
             <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />

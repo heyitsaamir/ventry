@@ -12,6 +12,7 @@ import { Item, State } from "../../Store/types";
 import Form, { FieldType, FieldInfos, FieldInfoArgs } from "./form";
 import Toast from "react-native-toast-message";
 import { ActionCreators } from "redux-undo";
+import { IsContainer } from "../../lib/modelUtilities/itemUtils";
 
 interface Props extends ScreenProps<"EditItem"> {
   navigation: NavigatorProps<"EditItem">;
@@ -121,18 +122,18 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
     if (!item) return null;
     if (item.id !== "") {
       emptyFields.push(
-        { type: FieldType.containerId, containerId: item.parentId },
+        { type: FieldType.containerId, containerId: item.parentId, itemId: item.id },
         {
           type: FieldType.quantity,
-          quantity: item.type === "Container" ? undefined : item.quantity,
+          quantity: IsContainer(item) ? undefined : item.quantity,
         },
         { type: FieldType.upc, upc: item.upc },
         {
           type: FieldType.isContainer,
-          isContainer: item.type === "Container",
-          disabled: item.type === "Container" && item.itemsInside.length > 0,
+          isContainer: IsContainer(item),
+          disabled: IsContainer(item) && item.itemsInside.length > 0,
           comment:
-            item.type === "Container" && item.itemsInside.length > 0
+            IsContainer(item) && item.itemsInside.length > 0
               ? "This item contains stuff. It cannot be converted into a non-container"
               : undefined,
         }
