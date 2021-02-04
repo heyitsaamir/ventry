@@ -67,7 +67,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
         ] as Route[],
       };
     } else {
-      const ItemHistoryScene = () => <ItemHistory item={item} navigation={nav} />;
+      const ItemHistoryScene = () => <ItemHistory itemId={itemId} navigation={nav} />;
       return {
         sceneMap: SceneMap({
           second: ItemHistoryScene,
@@ -186,7 +186,7 @@ const TitleContainer = styled(View)({
 
 const TitleContent = styled(View)({});
 
-const ItemIconContainer = styled(ItemIcon)({ marginRight: 10 });
+const ItemIconContainer = styled(ItemIcon)({ marginLeft: 5, marginRight: 15 });
 
 const ContainerPath = styled(Text)<ThemeProps>((props) => ({
   color: props.theme.colors.grey2,

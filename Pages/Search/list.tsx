@@ -5,14 +5,14 @@ import { ItemCard } from "../../Components/ItemListCard";
 
 interface Props {
   items: Item[];
-  onTap: (item: Item) => void;
+  onItemTap: (item: Item) => void;
 }
 
-export const SearchList = ({ items, onTap }: Props) => {
+export const SearchList = ({ items, onItemTap }: Props) => {
   return (
     <FlatList
       data={items}
-      renderItem={({ item }) => <ItemCard itemId={item.id} onTap={onTap} />}
+      renderItem={({ item }) => <ItemCard itemId={item.id} onTap={onItemTap} />}
       keyExtractor={(item) => item.id}
     />
   );

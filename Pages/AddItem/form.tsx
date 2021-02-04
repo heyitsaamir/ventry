@@ -1,8 +1,7 @@
 import styled from "@emotion/native";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Text, View } from "react-native";
-import Modal from "react-native-modal";
-import { Button, Icon, ListItem, ThemeContext } from "react-native-elements";
+import { Button, Icon, ListItem, Theme, ThemeContext } from "react-native-elements";
 import { ScrollView, Switch, TouchableOpacity } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
 import { EmojiSelectorContext } from "../../Components/Navigation/emojiSelectorContext";
@@ -10,9 +9,14 @@ import { NavigatorProps } from "../../Components/Navigation/Routes";
 import { SearchContext } from "../../Components/Navigation/searchContext";
 import NumberInput from "../../Components/NumberInput";
 import { InventoryState } from "../../Store/inventory";
-import { ContainerItem, Item, State } from "../../Store/types";
+import { Item, State } from "../../Store/types";
 import CameraInput from "./cameraInput";
 import { IsContainer } from "../../lib/modelUtilities/itemUtils";
+import { useAnimation } from "../../lib/hooks/useAnimation";
+import Animated, { Easing } from "react-native-reanimated";
+import { SearchedItems } from "../Search";
+import TagList from "../../Components/TagList";
+import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
 
 export enum FieldType {
   icon,
@@ -164,6 +168,7 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
       fieldInfos.push({
         type: FieldType.containerId,
         containerId: containerIdInputState.value,
+        itemId: fields.get(FieldType.containerId).itemId,
       });
     }
 
@@ -187,7 +192,11 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
       {containsItemFields && (
         <InputContainer label="Item info">
           {fields.has(FieldType.title) && (
-            <TitleSelector {...titleInputState} disabled={fields.isDisabled(FieldType.title)} />
+            <TitleSelector
+              {...titleInputState}
+              disabled={fields.isDisabled(FieldType.title)}
+              originalTitle={fields.get(FieldType.title)?.title ?? ""}
+            />
           )}
           {fields.has(FieldType.quantity) && !isContainerInputState.value && (
             <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
@@ -261,13 +270,13 @@ const IconSelector = ({
 
   return (
     <IconContainer backgroundColor={theme.colors.white} disabled={disabled}>
-      <MainIconContainer backgroundColor={theme.colors.primary} onPress={navigateEmojiSelector}>
+      <MainIconContainer backgroundColor={theme.colors.secondary} onPress={navigateEmojiSelector}>
         <MainIcon>
           {value || (
             <Icon
-              type={isContainer ? "font-awesome-5" : "octicon"}
-              name={isContainer ? "box-open" : "screen-full"}
-              color={theme.colors.black}
+              type="font-awesome-5"
+              name={isContainer ? "box-open" : "file-image"}
+              color={theme.colors.background}
             />
           )}
         </MainIcon>
@@ -276,11 +285,14 @@ const IconSelector = ({
   );
 };
 
-const TitleSelector = (props: StringFieldSelector) => {
+const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) => {
   const [showScanner, setShowScanner] = useState(false);
+  const hasText = props.value !== props.originalTitle && props.value !== "";
+  const animation = useAnimation({ doAnimation: hasText, duration: 200 });
+
   return (
     <>
-      <ListItem>
+      <ListItem bottomDivider>
         <ListItem.Title>Name</ListItem.Title>
         <ListItem.Content>
           <ListItem.Input placeholder="of the item" {...props} />
@@ -294,6 +306,13 @@ const TitleSelector = (props: StringFieldSelector) => {
           }}
         />
       </ListItem>
+      {props.originalTitle === "" && (
+        <SimilarNameContainer
+          style={{ height: animation.interpolate({ inputRange: [0, 1], outputRange: [0, 70] }) }}
+        >
+          {<SearchedSuggestion searchedText={props.value} />}
+        </SimilarNameContainer>
+      )}
       <CameraInput
         isVisible={showScanner}
         dismiss={() => {
@@ -311,11 +330,45 @@ const TitleSelector = (props: StringFieldSelector) => {
   );
 };
 
+const SearchedSuggestion = ({ searchedText }: { searchedText: string }) => {
+  const { theme } = useContext(ThemeContext);
+  if (!searchedText) return null;
+  return (
+    <View>
+      <SimilarNameText theme={theme}>Other possible items with similar names</SimilarNameText>
+      <SearchedItems
+        searchTerm={searchedText}
+        onItemTap={() => {}}
+        display={(props) => {
+          if (props.items.length === 0)
+            return (
+              <EmptyBasic
+                icon={{
+                  name: "search",
+                  type: "material",
+                  size: 15,
+                  color: theme.colors.border,
+                }}
+                direction="row"
+                text="No items"
+              />
+            );
+          return <ItemTagList {...props} />;
+        }}
+      />
+    </View>
+  );
+};
+
+const ItemTagList = (props: { items: Item[] }) => {
+  return <TagList tags={props.items.map((item) => ({ id: item.id, value: item.name }))} />;
+};
+
 const UPCSelector = (props: StringFieldSelector) => {
   const [showScanner, setShowScanner] = useState(false);
   return (
     <>
-      <ListItem>
+      <ListItem bottomDivider>
         <ListItem.Title>UPC</ListItem.Title>
         <ListItem.Content>
           <ListItem.Input placeholder="Optionally add a UPC for quick search" {...props} />
@@ -348,7 +401,7 @@ const UPCSelector = (props: StringFieldSelector) => {
 
 const NumberSelector = (props: NumberFieldSelector) => {
   return (
-    <ListItem>
+    <ListItem bottomDivider>
       <ListItem.Content>
         <ListItem.Title>How many?</ListItem.Title>
       </ListItem.Content>
@@ -358,13 +411,18 @@ const NumberSelector = (props: NumberFieldSelector) => {
 };
 
 const IsContainerSelector = (props: BooleanFieldSelector & Omit<IsContainerField, "isContainer">) => {
+  const { theme } = useContext(ThemeContext);
   return (
-    <ListItem>
+    <ListItem bottomDivider>
       <ListItem.Content>
         <ListItem.Title>Is this a container?</ListItem.Title>
         {props.comment && <ListItem.Subtitle>{props.comment}</ListItem.Subtitle>}
       </ListItem.Content>
-      <Switch {...props} />
+      <Switch
+        {...props}
+        ios_backgroundColor={theme.colors.border}
+        trackColor={{ true: theme.colors.secondary, false: undefined }}
+      />
     </ListItem>
   );
 };
@@ -464,12 +522,24 @@ const MainIconContainer = styled(TouchableOpacity)<{ backgroundColor: string }>(
 
 const MainIcon = styled(Text)({
   textAlign: "center",
+  marginTop: 7,
   fontSize: 40,
 });
 
 const SubmitButton = styled(Button)({
   flex: 0,
   marginVertical: 20,
+});
+
+const SimilarNameText = styled(Text)<{ theme: Theme }>((props) => ({
+  marginTop: 5,
+  marginLeft: 5,
+  color: props.theme.colors.text,
+  fontStyle: "italic",
+}));
+
+const SimilarNameContainer = styled(Animated.View)({
+  width: "100%",
 });
 
 export default Form;

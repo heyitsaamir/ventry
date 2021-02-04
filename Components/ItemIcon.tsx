@@ -12,9 +12,14 @@ interface Props {
 
 export default function ItemIcon({ icon, size: propsSize, isContainer, style }: Props) {
   const { theme } = useContext(ThemeContext);
-  const size = propsSize === "lg" ? 80 : propsSize === "md" ? 60 : 40;
+  const size = propsSize === "lg" ? 80 : propsSize === "md" ? 65 : 40;
   return (
-    <IconContainer style={style} backgroundColor={theme.colors.grey5} size={size}>
+    <IconContainer
+      style={style}
+      backgroundColor={theme.colors.grey5}
+      borderColor={theme.colors.border}
+      size={size}
+    >
       {icon ? (
         <TextIcon>{icon}</TextIcon>
       ) : (
@@ -34,15 +39,17 @@ export default function ItemIcon({ icon, size: propsSize, isContainer, style }: 
   );
 }
 
-const IconContainer = styled(View)<{ backgroundColor: string; size: number }>(
-  ({ size, backgroundColor }) => ({
+const IconContainer = styled(View)<{ backgroundColor: string; borderColor: string; size: number }>(
+  ({ size, backgroundColor, borderColor }) => ({
     alignContent: "center",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: size / 2,
     width: size,
     height: size,
-    backgroundColor: backgroundColor,
+    backgroundColor,
+    borderColor,
+    borderWidth: 1,
     shadowColor: "rgba(0,0,0, .4)",
   })
 );

@@ -16,7 +16,7 @@ export const theme: Theme = {
     background: colors.white,
     text: colors.jet,
     border: colors.gainsboro,
-    secondary: colors["orange-web"],
+    secondary: colors["indigo-dye"],
     searchBg: colors.ming
   }
 };
