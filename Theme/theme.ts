@@ -7,12 +7,13 @@ const colors = {
   white: "#ffffffff",
   gainsboro: "#d9d9d9ff",
   "indigo-dye": "#284b63ff",
+  red: "#c4352b"
 };
 
 export const theme: Theme = {
   colors: {
-    error: "#c4352b",
-    primary: colors.ming,
+    error: colors.red,
+    primary: colors["indigo-dye"],
     background: colors.white,
     text: colors.jet,
     border: colors.gainsboro,
