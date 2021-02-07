@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DarkTheme, DefaultTheme, NavigationContainer, Theme } from "@react-navigation/native";
+import { NavigationContainer, Theme } from "@react-navigation/native";
 import { HomeScreen } from "../../Pages/Home";
 import { createStackNavigator } from "@react-navigation/stack";
 import { RouteParams } from "./Routes";
@@ -11,15 +11,16 @@ import { ItemPredicate, OnItemTap, SearchContext } from "./searchContext";
 import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
 import { EmojiSelectorScreen } from "../../Pages/EmojiSelector";
 import { ThemeContext } from "react-native-elements";
+import { ViewStyle } from "react-native";
 
 const { Navigator: MainNavigator, Screen: MainScreen } = createStackNavigator<RouteParams>();
 const { Navigator: RootNavigator, Screen: RootScreen } = createStackNavigator<RouteParams>();
 
-const MainNavigation = () => {
-  const themeContext = React.useContext(ThemeContext);
+const headerStyle: ViewStyle = { elevation: 0, borderBottomWidth: 1 };
 
+const MainNavigation = () => {
   return (
-    <MainNavigator>
+    <MainNavigator screenOptions={{ headerStyle }}>
       <MainScreen name="Home" component={HomeScreen} />
       <MainScreen name="Details" component={DetailsScreen} />
       <MainScreen name="ItemDetails" component={ItemDetailsScreen} />
@@ -51,7 +52,7 @@ export const AppNavigator = () => {
     <SearchContext.Provider value={{ onItemTap, setOnItemTap, predicate, setPredicate }}>
       <EmojiSelectorContext.Provider value={{ onEmojiTap, setOnEmojiTap }}>
         <NavigationContainer theme={{ ...themeContext.theme, dark: false } as Theme}>
-          <RootNavigator mode="modal">
+          <RootNavigator mode="modal" screenOptions={{ headerStyle }}>
             <RootScreen name="Main" component={MainNavigation} options={{ headerShown: false }} />
             <RootScreen name="AddItem" component={AddItemScreen} options={{ title: "Add new item" }} />
             <RootScreen name="EditItem" component={EditItemScreen} options={{ title: "Edit item" }} />

@@ -11,16 +11,13 @@
     "slug": "ventry",
     "version": "1.0.0",
     "sdkVersion": "40.0.0",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "android": {
       "package": "io.ventry.client"
     },
     "ios": {
       "bundleIdentifier": "io.ventry.client"
-    }
+    },
+    "icon": "./Components/assets/icon.png"
   }
 }

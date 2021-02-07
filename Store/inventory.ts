@@ -199,7 +199,7 @@ const addHistoryItem = (state: InventoryState, itemId: string, summary: string[]
   state.historyIdByItemId[itemId].push(history.id);
 }
 
-const keysToCheck: (keyof ContainerItem | keyof NonContainerItem)[] = ['name', 'type', 'upc', 'quantity'];
+const keysToCheck: (keyof ContainerItem | keyof NonContainerItem)[] = ['name', 'type', 'upc', 'quantity', 'icon'];
 const evaluateSimpleDifferenceInObject = (originalItem: Item, newItem: Item): string[] => {
   return Object.keys(originalItem).reduce((differences, key: keyof ContainerItem | keyof NonContainerItem) => {
     if (keysToCheck.includes(key) && originalItem[key] !== newItem[key]) {

@@ -38,7 +38,7 @@ export const HomeScreen = ({ navigation }: Props) => {
   };
 
   if (!assets) {
-    return <Text>assets: {JSON.stringify(assets)}</Text>;
+    return null;
   }
 
   if (error) {

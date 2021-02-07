@@ -27,15 +27,15 @@ export const AlertModal = (props: Props) => {
         <StyledText>{props.text}</StyledText>
         <ButtonContainer reverse={props.reverse}>
           {props.cancelButton && (
-            <StyledButton
+            <Button
               type="outline"
               containerStyle={{ flex: 1 }}
               title={props.cancelButton.text}
               onPress={props.cancelButton.onPress}
             />
           )}
-          <StyledButton
-            containerStyle={{ flex: 1 }}
+          <Button
+            containerStyle={{ flex: 1, marginHorizontal: 5 }}
             title={props.confirmButton.text}
             onPress={props.confirmButton.onPress}
           />
@@ -52,7 +52,8 @@ const AlertContainer = styled(View)<{ theme: Theme }>(({ theme }) => ({
   position: "absolute",
   width: "100%",
   bottom: 50,
-  padding: 5,
+  padding: 10,
+  borderRadius: 10,
 }));
 
 const StyledText = styled(Text)({
@@ -64,8 +65,3 @@ const ButtonContainer = styled(View)<{ reverse?: boolean }>((props) => ({
   flexDirection: props.reverse ? "row-reverse" : "row",
   justifyContent: "center",
 }));
-
-const StyledButton = styled(Button)({
-  flex: 1,
-  margin: 5,
-});

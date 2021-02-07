@@ -21,7 +21,7 @@ export default function ItemIcon({ icon, size: propsSize, isContainer, style }: 
       size={size}
     >
       {icon ? (
-        <TextIcon>{icon}</TextIcon>
+        <TextIcon size={size}>{icon}</TextIcon>
       ) : (
         <Icon
           size={size / 2}
@@ -54,10 +54,10 @@ const IconContainer = styled(View)<{ backgroundColor: string; borderColor: strin
   })
 );
 
-const TextIcon = styled(Text)({
+const TextIcon = styled(Text)<{ size: number }>((props) => ({
   textAlign: "center",
-  fontSize: 20,
-});
+  fontSize: props.size * 0.6,
+}));
 
 const ContainerIcon = styled(View)({
   position: "absolute",
