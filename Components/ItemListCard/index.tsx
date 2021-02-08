@@ -10,7 +10,7 @@ interface Props {
   onTap: (item: Item) => void;
 }
 
-export const ItemCard = ({ itemId, onTap }: Props) => {
+export const ItemListCard = ({ itemId, onTap }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
 
   let category: string;

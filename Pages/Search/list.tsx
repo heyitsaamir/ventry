@@ -1,7 +1,7 @@
 import React from "react";
 import { Item } from "../../Store/types";
 import { FlatList } from "react-native-gesture-handler";
-import { ItemCard } from "../../Components/ItemListCard";
+import { ItemListCard } from "../../Components/ItemListCard";
 
 interface Props {
   items: Item[];
@@ -12,7 +12,7 @@ export const SearchList = ({ items, onItemTap }: Props) => {
   return (
     <FlatList
       data={items}
-      renderItem={({ item }) => <ItemCard itemId={item.id} onTap={onItemTap} />}
+      renderItem={({ item }) => <ItemListCard itemId={item.id} onTap={onItemTap} />}
       keyExtractor={(item) => item.id}
     />
   );

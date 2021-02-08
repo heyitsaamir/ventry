@@ -4,13 +4,13 @@ import styled from "@emotion/native";
 import { useDispatch, useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
+import { Card, Icon, Text, Theme, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath, IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
 import InfoTag from "../../Components/InfoTag";
 import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
-import { ItemCard } from "../../Components/ItemListCard";
+import { ItemListCard } from "../../Components/ItemListCard";
 import { SceneMap } from "react-native-tab-view";
 import { CollapsibleTabView, useCollapsibleScene } from "react-native-collapsible-tab-view";
 import { HistoryItemCard } from "../../Components/ItemListCard/historyItem";
@@ -18,6 +18,8 @@ import dateFormat from "dateformat";
 import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
 import { useAppDispatch } from "../../Store";
 import { changeInQuantity, editItem } from "../../Store/inventory";
+import { ScrollView } from "react-native-gesture-handler";
+import { ItemCard } from "./Card";
 
 type Route = {
   key: "first" | "second";
@@ -68,28 +70,18 @@ export const ItemDetailsScreen = ({ route }: Props) => {
   }, [dispatch, item]);
 
   const { sceneMap, routes } = useMemo(() => {
-    if (IsContainer(item)) {
-      const ItemDetailsScene = () => <ItemDetails itemId={itemId} navigation={nav} />;
-      const ItemHistoryScene = () => <ItemHistory itemId={itemId} navigation={nav} />;
-      return {
-        sceneMap: SceneMap({
-          first: ItemDetailsScene,
-          second: ItemHistoryScene,
-        }),
-        routes: [
-          { key: "first", title: "Details" },
-          { key: "second", title: "History" },
-        ] as Route[],
-      };
-    } else {
-      const ItemHistoryScene = () => <ItemHistory itemId={itemId} navigation={nav} />;
-      return {
-        sceneMap: SceneMap({
-          second: ItemHistoryScene,
-        }),
-        routes: [{ key: "second", title: "History" }] as Route[],
-      };
-    }
+    const ItemDetailsScene = () => <ItemDetails itemId={itemId} navigation={nav} />;
+    const ItemHistoryScene = () => <ItemHistory itemId={itemId} navigation={nav} />;
+    return {
+      sceneMap: SceneMap({
+        first: ItemDetailsScene,
+        second: ItemHistoryScene,
+      }),
+      routes: [
+        { key: "first", title: "Details" },
+        { key: "second", title: "History" },
+      ] as Route[],
+    };
   }, [itemId, nav, item.type]);
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -147,17 +139,30 @@ export const ItemDetailsScreen = ({ route }: Props) => {
 const ItemDetails = ({ itemId, navigation }: { itemId: string; navigation: NavigatorProps }) => {
   const scrollPropsAndRef = useCollapsibleScene<Route>("first");
   const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
-  return (
-    <Animated.FlatList
-      {...scrollPropsAndRef}
-      data={IsContainer(item) ? item.itemsInside : []}
-      renderItem={({ item: itemId }) => (
-        <ItemCard itemId={itemId} onTap={(item) => navigation.push("ItemDetails", { itemId: item.id })} />
-      )}
-      keyExtractor={(itemId: string) => itemId}
-      ListEmptyComponent={<EmptyBasic text="No items" icon={{ name: "box-open", type: "font-awesome-5" }} />}
-    />
-  );
+  if (!IsContainer(item)) {
+    return (
+      <Animated.ScrollView {...scrollPropsAndRef}>
+        <ItemCard item={item} />
+      </Animated.ScrollView>
+    );
+  } else {
+    return (
+      <Animated.FlatList
+        {...scrollPropsAndRef}
+        data={item.itemsInside}
+        renderItem={({ item: itemId }) => (
+          <ItemListCard
+            itemId={itemId}
+            onTap={(item) => navigation.push("ItemDetails", { itemId: item.id })}
+          />
+        )}
+        keyExtractor={(itemId: string) => itemId}
+        ListEmptyComponent={
+          <EmptyBasic text="No items" icon={{ name: "box-open", type: "font-awesome-5" }} />
+        }
+      />
+    );
+  }
 };
 
 const ItemHistory = ({ itemId }: { itemId: string; navigation: NavigatorProps }) => {
@@ -213,16 +218,13 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
 
 const InfoBar = ({ item, contains }: { item: Item; contains?: number }) => {
   const { theme } = useContext(ThemeContext);
+  if (!IsContainer(item)) return null;
   return (
     <InfoBarContainer theme={theme}>
-      {IsContainer(item) ? (
-        <>
-          <InfoTag info={`Types of items: ${item.itemsInside.length}`} />
-          {contains != null ? <InfoTag info={`All items inside: ${contains}`} /> : null}
-        </>
-      ) : (
-        <InfoTag info={`Quantity: ${item.quantity}`} />
-      )}
+      <>
+        <InfoTag info={`Types of items: ${item.itemsInside.length}`} />
+        {contains != null ? <InfoTag info={`All items inside: ${contains}`} /> : null}
+      </>
     </InfoBarContainer>
   );
 };
