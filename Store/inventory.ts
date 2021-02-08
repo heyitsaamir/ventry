@@ -217,7 +217,7 @@ const addHistoryItem = (state: InventoryState, itemId: string, summary: Summary[
       && typeof firstSummaryOfLastHistoryItem !== 'string'
       && firstSummary.type === 'quantity'
       && firstSummaryOfLastHistoryItem.type === 'quantity'
-      && ((new Date()).getTime() - (new Date(lastHistoryItem.createdAtUTC)).getTime()) < 60_000) {
+      && ((new Date()).getTime() - (new Date(lastHistoryItem.createdAtUTC)).getTime()) < 300_000) {
       state.historyItems[lastHistoryId].summary = [{
         ...firstSummaryOfLastHistoryItem,
         endQuantity: firstSummary.endQuantity,
