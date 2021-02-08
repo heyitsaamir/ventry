@@ -1,4 +1,4 @@
-import { StateWithHistory as UndoableState } from 'redux-undo';
+import { StateWithHistory as UndoableState } from "redux-undo";
 
 type Id = string;
 
@@ -12,19 +12,19 @@ interface BaseItem {
 }
 
 interface NonContainerItem extends BaseItem {
-  type: 'NonContainer';
+  type: "NonContainer";
   quantity: number;
 }
 
 interface ContainerItem extends BaseItem {
-  type: 'Container';
+  type: "Container";
   itemsInside: Id[];
 }
 
 type Item = NonContainerItem | ContainerItem;
 
 interface InventoryState {
-  items: { [id: string]: Item }
+  items: { [id: string]: Item };
 }
 
 export interface V0State {
@@ -38,17 +38,17 @@ export const v0Migration = (state?: {} & { _persist: any }): V0State & { _persis
       past: [],
       present: {
         items: {
-          '': {
-            type: 'Container',
-            id: '',
-            createdAtUTC: (new Date()).toUTCString(),
-            name: 'Root',
-            parentId: 'x',
+          "": {
+            type: "Container",
+            id: "",
+            createdAtUTC: new Date().toUTCString(),
+            name: "Root",
+            parentId: "x",
             itemsInside: [],
           },
-        }
+        },
       },
-      future: []
-    }
-  }
-}
+      future: [],
+    },
+  };
+};

@@ -3,7 +3,7 @@ import { InventoryState } from "../../Store/inventory";
 import { Item } from "../../Store/types";
 
 export type OnItemTap = (item: Item) => void;
-export type ItemPredicate = (inventory: InventoryState['items']) => Item[];
+export type ItemPredicate = (inventory: InventoryState["items"]) => Item[];
 export const SearchContext = React.createContext<{
   onItemTap: OnItemTap | undefined;
   setOnItemTap: (fn?: OnItemTap) => void;
@@ -11,7 +11,7 @@ export const SearchContext = React.createContext<{
   setPredicate?: (fn?: ItemPredicate) => void;
 }>({
   onItemTap: undefined,
-  setOnItemTap: (fn?: OnItemTap) => { },
+  setOnItemTap: (fn?: OnItemTap) => {},
   predicate: undefined,
-  setPredicate: undefined
+  setPredicate: undefined,
 });

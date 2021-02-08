@@ -11,15 +11,15 @@ export interface InventoryState {
 
 type AddItemParams = {
   newItem:
-  | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId">
-  | Omit<NonContainerItem, "id" | "createdAtUTC" | "parentId">;
+    | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId">
+    | Omit<NonContainerItem, "id" | "createdAtUTC" | "parentId">;
   parentId: string;
 };
 type EditItemParams = {
   itemId: string;
   updatedItem:
-  | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside">
-  | Omit<NonContainerItem, "id" | "createdAtUTC">;
+    | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside">
+    | Omit<NonContainerItem, "id" | "createdAtUTC">;
 };
 type DeleteItemParams = { itemId: string; includeContents?: boolean };
 type ChangeInQuantity = { itemId: string; type: "addOne" | "removeOne" };

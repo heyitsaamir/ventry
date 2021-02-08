@@ -7,7 +7,7 @@ const colors = {
   white: "#ffffffff",
   gainsboro: "#d9d9d9ff",
   "indigo-dye": "#284b63ff",
-  red: "#c4352b"
+  red: "#c4352b",
 };
 
 export const theme: Theme = {
@@ -18,6 +18,6 @@ export const theme: Theme = {
     text: colors.jet,
     border: colors.gainsboro,
     secondary: colors["indigo-dye"],
-    searchBg: colors.ming
-  }
+    searchBg: colors.ming,
+  },
 };

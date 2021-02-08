@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import Animated, { Easing } from 'react-native-reanimated';
+import { useState, useEffect } from "react";
+import Animated, { Easing } from "react-native-reanimated";
 
 export const useAnimation = ({ doAnimation, duration }: { doAnimation: boolean; duration: number }) => {
   const [animation] = useState(new Animated.Value(0));
@@ -13,4 +13,4 @@ export const useAnimation = ({ doAnimation, duration }: { doAnimation: boolean; 
   }, [doAnimation]);
 
   return animation;
-}
+};

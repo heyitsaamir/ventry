@@ -7,5 +7,5 @@ export const EmojiSelectorContext = React.createContext<{
   setOnEmojiTap: (fn?: OnEmojiTap) => void;
 }>({
   onEmojiTap: undefined,
-  setOnEmojiTap: (fn?: OnEmojiTap) => { },
+  setOnEmojiTap: (fn?: OnEmojiTap) => {},
 });

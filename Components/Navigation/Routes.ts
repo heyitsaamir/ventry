@@ -6,22 +6,25 @@ export type RouteParams = {
   Home: undefined;
   Details: undefined;
   AddItem: {
-    parentItemId: string
+    parentItemId: string;
   };
   EditItem: {
-    itemId: string
+    itemId: string;
   };
   ItemDetails: {
-    itemId: string
-  }
+    itemId: string;
+  };
   Main: undefined;
   Search: undefined;
   Explore: {
     containersOnly?: boolean;
-  },
+  };
   EmojiSelector: undefined;
 };
 
-export type NavigatorProps<TKey extends keyof RouteParams = keyof RouteParams> = StackNavigationProp<RouteParams, TKey>;
-export type ScreenProps<TKey extends keyof RouteParams> = StackScreenProps<RouteParams, TKey>
+export type NavigatorProps<TKey extends keyof RouteParams = keyof RouteParams> = StackNavigationProp<
+  RouteParams,
+  TKey
+>;
+export type ScreenProps<TKey extends keyof RouteParams> = StackScreenProps<RouteParams, TKey>;
 export const useNav = () => useNavigation<NavigatorProps<keyof RouteParams>>();

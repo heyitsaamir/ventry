@@ -1,8 +1,8 @@
-import { Colors, FullTheme } from 'react-native-elements'
+import { Colors, FullTheme } from "react-native-elements";
 
-type RecursivePartial<T> = { [P in keyof T]?: RecursivePartial<T[P]> }
+type RecursivePartial<T> = { [P in keyof T]?: RecursivePartial<T[P]> };
 
-declare module 'react-native-elements' {
+declare module "react-native-elements" {
   export interface Colors {
     background: string;
     card: string;
@@ -18,7 +18,7 @@ declare module 'react-native-elements' {
   // }
 
   export interface FullTheme {
-    colors: RecursivePartial<Colors>
+    colors: RecursivePartial<Colors>;
     // padding: {
     //   small: number
     //   default: number
