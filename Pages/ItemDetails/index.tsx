@@ -1,7 +1,7 @@
-import React, { useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { Animated, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
 import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
@@ -15,6 +15,9 @@ import { SceneMap } from "react-native-tab-view";
 import { CollapsibleTabView, useCollapsibleScene } from "react-native-collapsible-tab-view";
 import { HistoryItemCard } from "../../Components/ItemListCard/historyItem";
 import dateFormat from "dateformat";
+import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
+import { useAppDispatch } from "../../Store";
+import { changeInQuantity, editItem } from "../../Store/inventory";
 
 type Route = {
   key: "first" | "second";
@@ -31,6 +34,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
   const [index, setIndex] = React.useState(0);
   const nav = useNav();
   const { theme } = useContext(ThemeContext);
+  const dispatch = useAppDispatch();
   const navButtons = useMemo(() => {
     if (!item) return [];
     const navButtons: RightNavButton[] = [];
@@ -39,19 +43,30 @@ export const ItemDetailsScreen = ({ route }: Props) => {
       type: "material",
       onPress: () => nav.navigate("EditItem", { itemId: item.id }),
     });
-    if (IsContainer(item)) {
-      navButtons.push({
-        name: "add",
-        type: "material",
-        onPress: () => nav.navigate("AddItem", { parentItemId: item.id }),
-      });
-    }
     return navButtons;
   }, [item]);
   useCustomNav({
     title: item.name,
     rightButtons: navButtons,
   });
+
+  const onCreateNewItem = useCallback(() => {
+    if (IsContainer(item)) {
+      nav.navigate("AddItem", { parentItemId: item.id });
+    }
+  }, [nav, item]);
+
+  const increaseInQuantity = useCallback(() => {
+    if (!IsContainer(item)) {
+      dispatch(changeInQuantity({ itemId: item.id, type: "addOne" }));
+    }
+  }, [dispatch, item]);
+  const removeInQuantity = useCallback(() => {
+    if (!IsContainer(item)) {
+      dispatch(changeInQuantity({ itemId: item.id, type: "removeOne" }));
+    }
+  }, [dispatch, item]);
+
   const { sceneMap, routes } = useMemo(() => {
     if (IsContainer(item)) {
       const ItemDetailsScene = () => <ItemDetails itemId={itemId} navigation={nav} />;
@@ -94,6 +109,37 @@ export const ItemDetailsScreen = ({ route }: Props) => {
       ) : (
         <Text>Does not exist</Text>
       )}
+      <FabContainer>
+        {IsContainer(item) ? (
+          <Icon
+            reverse
+            onPress={onCreateNewItem}
+            color={theme.colors.primary}
+            type="material"
+            name="add"
+            size={30}
+          />
+        ) : (
+          <>
+            <Icon
+              reverse
+              onPress={increaseInQuantity}
+              color={theme.colors.primary}
+              type="material"
+              name="add"
+              size={30}
+            />
+            <Icon
+              reverse
+              onPress={removeInQuantity}
+              color={theme.colors.primary}
+              type="material"
+              name="remove"
+              size={30}
+            />
+          </>
+        )}
+      </FabContainer>
     </SafeAreaView>
   );
 };
@@ -109,6 +155,7 @@ const ItemDetails = ({ itemId, navigation }: { itemId: string; navigation: Navig
         <ItemCard itemId={itemId} onTap={(item) => navigation.push("ItemDetails", { itemId: item.id })} />
       )}
       keyExtractor={(itemId: string) => itemId}
+      ListEmptyComponent={<EmptyBasic text="No items" icon={{ name: "box-open", type: "font-awesome-5" }} />}
     />
   );
 };
@@ -124,6 +171,7 @@ const ItemHistory = ({ itemId }: { itemId: string; navigation: NavigatorProps })
       data={(historyItemIds ?? []).reverse()}
       renderItem={({ item: historyItemId }) => <HistoryItemCard historyItemId={historyItemId} />}
       keyExtractor={(itemId: string) => itemId}
+      ListEmptyComponent={<EmptyBasic text="No history" icon={{ name: "eco", type: "material" }} />}
     />
   );
 };
@@ -165,11 +213,16 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
 
 const InfoBar = ({ item, contains }: { item: Item; contains?: number }) => {
   const { theme } = useContext(ThemeContext);
-  if (item.type !== "Container") return null;
   return (
     <InfoBarContainer theme={theme}>
-      <InfoTag info={`Types of items: ${item.itemsInside.length}`} />
-      {contains != null ? <InfoTag info={`All items inside: ${contains}`} /> : null}
+      {IsContainer(item) ? (
+        <>
+          <InfoTag info={`Types of items: ${item.itemsInside.length}`} />
+          {contains != null ? <InfoTag info={`All items inside: ${contains}`} /> : null}
+        </>
+      ) : (
+        <InfoTag info={`Quantity: ${item.quantity}`} />
+      )}
     </InfoBarContainer>
   );
 };
@@ -196,6 +249,16 @@ const InfoBarContainer = styled(View)<ThemeProps>((props) => ({
   backgroundColor: props.theme.colors.grey5,
   padding: 5,
   flexDirection: "row",
+  justifyContent: "center",
 }));
 
 const PathIcon = styled(Icon)({ marginRight: 5 });
+
+const FabContainer = styled(View)({
+  zIndex: 1000,
+  position: "absolute",
+  bottom: 50,
+  right: 30,
+  display: "flex",
+  flexDirection: "column",
+});

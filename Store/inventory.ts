@@ -1,6 +1,7 @@
 import uuid from 'react-native-uuid';
 import { ActionCreatorWithPayload, createSlice, PayloadAction, SliceCaseReducers, } from '@reduxjs/toolkit'
-import { Item, HistoryItem, ContainerItem, NonContainerItem } from './types';
+import { Item, HistoryItem, ContainerItem, NonContainerItem, Summary } from './types';
+import { IsContainer } from '../lib/modelUtilities/itemUtils';
 
 export interface InventoryState {
   items: { [id: string]: Item }
@@ -11,6 +12,7 @@ export interface InventoryState {
 type AddItemParams = { newItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId"> | Omit<NonContainerItem, 'id' | 'createdAtUTC' | 'parentId'>, parentId: string };
 type EditItemParams = { itemId: string, updatedItem: Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside"> | Omit<NonContainerItem, 'id' | 'createdAtUTC'> };
 type DeleteItemParams = { itemId: string, includeContents?: boolean };
+type ChangeInQuantity = { itemId: string, type: 'addOne' | 'removeOne' };
 
 export type ActionTypes = {
   AddItemParams: AddItemParams,
@@ -142,16 +144,33 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
     },
     deleteItem: (state, action: PayloadAction<DeleteItemParams>) => {
       deleteItemRecursive(state, action.payload);
-    }
+    },
+    changeInQuantity: (state, action: PayloadAction<ChangeInQuantity>) => {
+      const { itemId, type } = action.payload;
+      const originalItem = state.items[itemId];
+      if (!originalItem) {
+        throw new Error(`Original item did not exist: ${itemId}`);
+      }
+      if (IsContainer(originalItem)) {
+        throw new Error(`Original item cannot be a ${originalItem.id}`);
+      }
+      state.items[itemId] = {
+        ...originalItem,
+        quantity: originalItem.quantity + (type === 'addOne' ? 1 : -1),
+      }
+      const differences = evaluateSimpleDifferenceInObject(originalItem, state.items[itemId]);
+      addHistoryItem(state, itemId, differences)
+    },
   }
 });
 
-const { addItem: addItemFn, editItem: editItemFn, deleteItem: deleteItemFn } = inventorySlice.actions
+const { addItem: addItemFn, editItem: editItemFn, deleteItem: deleteItemFn, changeInQuantity: changeInQuantityFn } = inventorySlice.actions
 
 export default inventorySlice.reducer;
 export const addItem: ActionCreatorWithPayload<AddItemParams> = addItemFn;
 export const editItem: ActionCreatorWithPayload<EditItemParams> = editItemFn;
 export const deleteItem: ActionCreatorWithPayload<DeleteItemParams> = deleteItemFn;
+export const changeInQuantity: ActionCreatorWithPayload<ChangeInQuantity> = changeInQuantityFn;
 
 const deleteItemRecursive = (state: InventoryState, payload: DeleteItemParams) => {
   const { itemId, includeContents = false } = payload;
@@ -187,8 +206,26 @@ const addHistoryItemIfNeeded = (state: InventoryState, itemId: string) => {
   }
 }
 
-const addHistoryItem = (state: InventoryState, itemId: string, summary: string[]) => {
+const addHistoryItem = (state: InventoryState, itemId: string, summary: Summary[]) => {
   addHistoryItemIfNeeded(state, itemId);
+  if (summary.length === 1 && state.historyIdByItemId[itemId].length > 0) {
+    const [firstSummary] = summary;
+    const lastHistoryId = state.historyIdByItemId[itemId][state.historyIdByItemId[itemId].length - 1];
+    const lastHistoryItem = state.historyItems[lastHistoryId];
+    const [firstSummaryOfLastHistoryItem] = lastHistoryItem.summary;
+    if (typeof firstSummary !== 'string'
+      && typeof firstSummaryOfLastHistoryItem !== 'string'
+      && firstSummary.type === 'quantity'
+      && firstSummaryOfLastHistoryItem.type === 'quantity'
+      && ((new Date()).getTime() - (new Date(lastHistoryItem.createdAtUTC)).getTime()) < 60_000) {
+      state.historyItems[lastHistoryId].summary = [{
+        ...firstSummaryOfLastHistoryItem,
+        endQuantity: firstSummary.endQuantity,
+      }];
+      state.historyItems[lastHistoryId].createdAtUTC = (new Date()).toUTCString();
+      return;
+    }
+  }
   const history: HistoryItem = {
     id: uuid.v4(),
     itemId,
@@ -199,18 +236,29 @@ const addHistoryItem = (state: InventoryState, itemId: string, summary: string[]
   state.historyIdByItemId[itemId].push(history.id);
 }
 
-const keysToCheck: (keyof ContainerItem | keyof NonContainerItem)[] = ['name', 'type', 'upc', 'quantity', 'icon'];
-const evaluateSimpleDifferenceInObject = (originalItem: Item, newItem: Item): string[] => {
-  return Object.keys(originalItem).reduce((differences, key: keyof ContainerItem | keyof NonContainerItem) => {
+type KeysOfItem = (keyof ContainerItem | keyof NonContainerItem);
+const keysToCheck: KeysOfItem[] = ['name', 'type', 'upc', 'quantity', 'icon'];
+const evaluateSimpleDifferenceInObject = (originalItem: Item, newItem: Item): Summary[] => {
+  const differences = Object.keys(originalItem).reduce((differences, key: keyof ContainerItem | keyof NonContainerItem) => {
     if (keysToCheck.includes(key) && originalItem[key] !== newItem[key]) {
       if (originalItem[key] != null && newItem[key] != null) {
-        differences.push(`Changed ${key} from ${originalItem[key]} to ${newItem[key]}`);
+        differences.push({ summary: `Changed ${key} from ${originalItem[key]} to ${newItem[key]}`, key });
       } else if (originalItem[key] != null) {
-        differences.push(`Removed ${key} from ${originalItem[key]} to ${newItem[key]}`);
+        differences.push({ summary: `Removed ${key} from ${originalItem[key]} to ${newItem[key]}`, key });
       } else if (newItem[key] != null) {
-        differences.push(`Changed ${key} to ${newItem[key]}`);
+        differences.push({ summary: `Changed ${key} to ${newItem[key]}`, key });
       }
     }
     return differences;
-  }, [] as string[]);
+  }, [] as { summary: string; key: KeysOfItem }[]);
+
+  if (differences.length === 1 && originalItem.type === 'NonContainer' && newItem.type === 'NonContainer' && differences[0].key === 'quantity') {
+    return [{
+      type: 'quantity',
+      startQuantity: originalItem.quantity,
+      endQuantity: newItem.quantity
+    }]
+  }
+
+  return differences.map((diff) => diff.summary);
 }

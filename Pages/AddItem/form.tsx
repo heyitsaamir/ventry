@@ -175,9 +175,9 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
     onDone(new FieldInfoArgs(fieldInfos));
   };
 
-  const containsItemFields =
-    fields.has(FieldType.title) || fields.has(FieldType.quantity) || fields.has(FieldType.upc);
-  const containsContainerFields = fields.has(FieldType.isContainer) || fields.has(FieldType.containerId);
+  const basicItemFields = fields.has(FieldType.title) || fields.has(FieldType.isContainer);
+  const detailsFields =
+    fields.has(FieldType.quantity) || fields.has(FieldType.upc) || fields.has(FieldType.containerId);
 
   return (
     <ScrollView>
@@ -189,8 +189,8 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
           isContainer={isContainerInputState.value}
         />
       )}
-      {containsItemFields && (
-        <InputContainer label="Item info">
+      {basicItemFields && (
+        <InputContainer label="Basic information">
           {fields.has(FieldType.title) && (
             <TitleSelector
               {...titleInputState}
@@ -198,18 +198,18 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
               originalTitle={fields.get(FieldType.title)?.title ?? ""}
             />
           )}
+          {fields.has(FieldType.isContainer) && (
+            <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
+          )}
+        </InputContainer>
+      )}
+      {detailsFields && (
+        <InputContainer label="Details">
           {fields.has(FieldType.quantity) && !isContainerInputState.value && (
             <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
           )}
           {fields.has(FieldType.upc) && (
             <UPCSelector {...upcInputState} disabled={fields.isDisabled(FieldType.upc)} />
-          )}
-        </InputContainer>
-      )}
-      {containsContainerFields && (
-        <InputContainer label="Container info">
-          {fields.has(FieldType.isContainer) && (
-            <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
           )}
           {fields.has(FieldType.containerId) && (
             <ContainerIdSelector

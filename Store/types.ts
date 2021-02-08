@@ -28,9 +28,12 @@ export interface ContainerItem extends BaseItem {
 
 export type Item = NonContainerItem | ContainerItem;
 
+export type QuantitySummary = { type: 'quantity', startQuantity: number; endQuantity: number }
+export type Summary = string | QuantitySummary
+
 export interface HistoryItem {
   id: string;
   itemId: string;
-  summary: string[];
+  summary: Summary[];
   createdAtUTC: string;
 }
