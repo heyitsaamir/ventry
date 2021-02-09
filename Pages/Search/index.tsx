@@ -1,7 +1,6 @@
-import React, { useContext, useEffect } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
-import styled from "@emotion/native";
-import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
+import React, { useContext } from "react";
+import { SafeAreaView } from "react-native";
+import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
 import { Item, State } from "../../Store/types";
 import { useSelector } from "react-redux";
 import { useFuse } from "../../lib/fuse/useFuse";
@@ -9,16 +8,15 @@ import { SearchList } from "./list";
 import { Icon, SearchBar, ThemeContext } from "react-native-elements";
 import { ItemPredicate, OnItemTap, SearchContext } from "../../Components/Navigation/searchContext";
 
+interface Props extends ScreenProps<"Search"> {
+  navigation: NavigatorProps<"Search">;
+}
 const useInputState = (initialValue = "") => {
   const [value, setValue] = React.useState(initialValue);
   return { value, onChangeText: setValue };
 };
 
-interface Props extends ScreenProps<"Search"> {
-  navigation: NavigatorProps<"Search">;
-}
-
-export const SearchScreen = ({ navigation }: Props) => {
+export const SearchScreen = ({}: Props) => {
   const searchInputState = useInputState();
   const { theme } = useContext(ThemeContext);
   const { onItemTap, predicate } = useContext(SearchContext);

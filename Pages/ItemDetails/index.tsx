@@ -1,10 +1,10 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { Animated, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { Card, Icon, Text, Theme, ThemeContext } from "react-native-elements";
+import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath, IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
@@ -17,8 +17,7 @@ import { HistoryItemCard } from "../../Components/ItemListCard/historyItem";
 import dateFormat from "dateformat";
 import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
 import { useAppDispatch } from "../../Store";
-import { changeInQuantity, editItem } from "../../Store/inventory";
-import { ScrollView } from "react-native-gesture-handler";
+import { changeInQuantity } from "../../Store/inventory";
 import { ItemCard } from "./Card";
 
 type Route = {

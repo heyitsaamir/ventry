@@ -17,8 +17,9 @@ export type RouteParams = {
   Main: undefined;
   Search: undefined;
   EmojiSelector: undefined;
-  Account: undefined;
   Explore: undefined;
+  AccountTab: undefined;
+  ExploreTab: undefined;
 };
 
 export type NavigatorProps<TKey extends keyof RouteParams = keyof RouteParams> = StackNavigationProp<
