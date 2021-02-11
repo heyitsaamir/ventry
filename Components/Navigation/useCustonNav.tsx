@@ -2,15 +2,17 @@ import React, { useLayoutEffect } from "react";
 import { useNav } from "./Routes";
 import { RightNavItemContainer, NavIcon } from "./RightNavItemContainer";
 
-export interface RightNavButton {
+export interface RightNavButtonOptions {
   name: string;
   type: string;
   onPress: () => void;
 }
 
+export type RightNavButtonElement = (props: { tintColor: string }) => JSX.Element;
+
 interface Options {
-  title: string;
-  rightButtons: RightNavButton[];
+  title?: string;
+  rightButtons?: RightNavButtonOptions[] | RightNavButtonElement;
 }
 
 const useCustomNav = (options: Partial<Options>) => {
@@ -22,9 +24,11 @@ const useCustomNav = (options: Partial<Options>) => {
       headerRight: rightButtons
         ? ({ tintColor }) => (
             <RightNavItemContainer>
-              {rightButtons.map((buttonOptions, key) => (
-                <NavIcon {...buttonOptions} color={tintColor} key={`nav-button-${key}`} />
-              ))}
+              {rightButtons instanceof Function
+                ? rightButtons({ tintColor })
+                : rightButtons.map((buttonOptions, key) => {
+                    return <NavIcon {...buttonOptions} color={tintColor} key={`nav-button-${key}`} />;
+                  })}
             </RightNavItemContainer>
           )
         : undefined,

@@ -62,7 +62,13 @@ function useSettableCallback<T extends Function | undefined>(callback: T): [T, (
 
 const BottomTabNavigator = () => {
   return (
-    <TabNavigator>
+    <TabNavigator
+      tabBarOptions={{
+        style: {
+          backgroundColor: theme.colors.background,
+        },
+      }}
+    >
       <TabScreen
         name="AccountTab"
         component={AccountNavigation}

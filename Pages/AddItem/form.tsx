@@ -299,7 +299,7 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
         </ListItem.Content>
         <Icon
           name="camera"
-          type="font-awesome-5"
+          type="material-community"
           disabled={props.disabled}
           onPress={() => {
             setShowScanner(true);
@@ -374,8 +374,8 @@ const UPCSelector = (props: StringFieldSelector) => {
           <ListItem.Input placeholder="Optionally add a UPC for quick search" {...props} />
         </ListItem.Content>
         <Icon
-          name="qrcode"
-          type="font-awesome-5"
+          name="barcode-scan"
+          type="material-community"
           disabled={props.disabled}
           onPress={() => {
             setShowScanner(true);

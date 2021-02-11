@@ -9,7 +9,7 @@ import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath, IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
 import InfoTag from "../../Components/InfoTag";
-import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
+import useCustomNav, { RightNavButtonOptions } from "../../Components/Navigation/useCustonNav";
 import { ItemListCard } from "../../Components/ItemListCard";
 import { SceneMap } from "react-native-tab-view";
 import { CollapsibleTabView, useCollapsibleScene } from "react-native-collapsible-tab-view";
@@ -38,7 +38,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
   const dispatch = useAppDispatch();
   const navButtons = useMemo(() => {
     if (!item) return [];
-    const navButtons: RightNavButton[] = [];
+    const navButtons: RightNavButtonOptions[] = [];
     navButtons.push({
       name: "edit",
       type: "material",

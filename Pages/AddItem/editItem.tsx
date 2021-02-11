@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { AlertModal } from "../../Components/AlertModal";
 import { removeItemFromNavStack } from "../../Components/Navigation/customActions/removeItemFromNavStack";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
-import useCustomNav, { RightNavButton } from "../../Components/Navigation/useCustonNav";
+import useCustomNav, { RightNavButtonOptions } from "../../Components/Navigation/useCustonNav";
 import { useAppDispatch } from "../../Store";
 import { editItem, deleteItem } from "../../Store/inventory";
 import { Item, State } from "../../Store/types";
@@ -104,7 +104,7 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
   }, [dispatch, item, navigation]);
 
   const navButtons = useMemo(() => {
-    const navButtons: RightNavButton[] = [];
+    const navButtons: RightNavButtonOptions[] = [];
     navButtons.push({
       name: "delete",
       type: "material",

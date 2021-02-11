@@ -25,11 +25,9 @@ export const SearchScreen = ({}: Props) => {
     <SafeAreaView style={{ flex: 1 }}>
       <SearchBar
         placeholder="Search"
+        lightTheme
         {...searchInputState}
-        placeholderTextColor={theme.colors.border}
-        inputStyle={{ color: theme.colors.background }}
-        searchIcon={<Icon type="material" name="search" color={theme.colors.border} />}
-        cancelButtonProps={{ color: theme.colors.border }}
+        searchIcon={<Icon type="material" name="search" color={theme.colors.grey3} />}
       />
       <SearchedItems
         searchTerm={searchInputState.value}
