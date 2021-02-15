@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState } from "react";
+import React, { ComponentProps, useContext, useMemo, useRef, useState } from "react";
 import { SafeAreaView, View } from "react-native";
 import { Button, Icon, Input, SearchBar, Text, ThemeContext } from "react-native-elements";
 import Animated, { Easing } from "react-native-reanimated";
@@ -6,7 +6,6 @@ import { NavIcon } from "../../Components/Navigation/RightNavItemContainer";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
 import useCustomNav, { RightNavButtonElement } from "../../Components/Navigation/useCustonNav";
 import { useAnimation } from "../../lib/hooks/useAnimation";
-import { Item } from "../../Store/types";
 import CameraInput from "../AddItem/cameraInput";
 import { SearchedItems } from "../Search";
 import { SearchList } from "../Search/list";
@@ -62,19 +61,14 @@ export const ExploreScreen = ({ navigation }: Props) => {
       <Animated.Text
         style={[
           {
-            margin: 10,
-            flexWrap: "wrap",
-          },
-          {
+            padding: 10,
             fontWeight: "bold",
-            fontSize: 40,
-            flexWrap: "wrap",
             color: theme.colors.text,
-            flex: 1,
+            fontSize: 40,
           },
           {
-            maxHeight: animation.interpolate({ inputRange: [0, 1], outputRange: [100, 0] }),
-            marginTop: animation.interpolate({ inputRange: [0, 1], outputRange: [100, 0] }),
+            paddingTop: animation.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }),
+            maxHeight: animation.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }),
           },
         ]}
       >
@@ -119,10 +113,9 @@ export const ExploreScreen = ({ navigation }: Props) => {
         <SearchedItems
           searchTerm={searchInputState.value}
           onItemTap={(item) => navigation.push("ItemDetails", { itemId: item.id })}
-          display={SearchList}
+          display={CustomSearchList}
         />
       )}
-
       <CameraInput
         isVisible={showCamera || showScanner}
         dismiss={() => {
@@ -149,4 +142,9 @@ export const ExploreScreen = ({ navigation }: Props) => {
       />
     </SafeAreaView>
   );
+};
+
+const CustomSearchList = (props: ComponentProps<typeof SearchList>) => {
+  if (props.items.length === 0) return null;
+  return <SearchList {...props} />;
 };
