@@ -11,15 +11,15 @@ export interface InventoryState {
 
 type AddItemParams = {
   newItem:
-    | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId">
-    | Omit<NonContainerItem, "id" | "createdAtUTC" | "parentId">;
+  | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside" | "parentId">
+  | Omit<NonContainerItem, "id" | "createdAtUTC" | "parentId">;
   parentId: string;
 };
 type EditItemParams = {
   itemId: string;
   updatedItem:
-    | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside">
-    | Omit<NonContainerItem, "id" | "createdAtUTC">;
+  | Omit<ContainerItem, "id" | "createdAtUTC" | "itemsInside">
+  | Omit<NonContainerItem, "id" | "createdAtUTC">;
 };
 type DeleteItemParams = { itemId: string; includeContents?: boolean };
 type ChangeInQuantity = { itemId: string; type: "addOne" | "removeOne" };
@@ -38,31 +38,7 @@ const initialState: InventoryState = {
       createdAtUTC: new Date().toUTCString(),
       name: "Root",
       parentId: "x",
-      itemsInside: ["kitchen-id"],
-    },
-    "kitchen-id": {
-      type: "Container",
-      id: "kitchen-id",
-      createdAtUTC: new Date().toUTCString(),
-      name: "Kitchen",
-      parentId: "",
-      itemsInside: ["knives-id", "spoons-id"],
-    },
-    "knives-id": {
-      type: "NonContainer",
-      id: "knives-id",
-      createdAtUTC: new Date().toUTCString(),
-      name: "Knives",
-      parentId: "kitchen-id",
-      quantity: 4,
-    },
-    "spoons-id": {
-      type: "NonContainer",
-      id: "spoons-id",
-      createdAtUTC: new Date().toUTCString(),
-      name: "Spoons",
-      parentId: "kitchen-id",
-      quantity: 4,
+      itemsInside: [],
     },
   },
   historyItems: {},
