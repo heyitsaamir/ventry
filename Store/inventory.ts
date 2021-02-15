@@ -36,7 +36,7 @@ const initialState: InventoryState = {
       type: "Container",
       id: "",
       createdAtUTC: new Date().toUTCString(),
-      name: "Root",
+      name: "Main",
       parentId: "x",
       itemsInside: [],
     },
