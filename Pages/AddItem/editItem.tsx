@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView } from "react-native";
 import { Text } from "react-native-elements";
 import { useSelector } from "react-redux";
@@ -9,10 +9,11 @@ import useCustomNav, { RightNavButtonOptions } from "../../Components/Navigation
 import { useAppDispatch } from "../../Store";
 import { editItem, deleteItem } from "../../Store/inventory";
 import { Item, State } from "../../Store/types";
-import Form, { FieldType, FieldInfos, FieldInfoArgs } from "./form";
+import Form, { FieldType, FieldInfos, FieldInfoArgs, FormRef } from "./form";
 import Toast from "react-native-toast-message";
 import { ActionCreators } from "redux-undo";
 import { IsContainer } from "../../lib/modelUtilities/itemUtils";
+import { useSettableCallback } from "../../lib/hooks/useSettableCallback";
 
 interface Props extends ScreenProps<"EditItem"> {
   navigation: NavigatorProps<"EditItem">;
@@ -25,8 +26,9 @@ export const EditItemScreen = ({ route, ...restProps }: Props) => {
 };
 
 const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps<"EditItem"> }) => {
-  const [isModalVisible, setModalVisible] = useState(false);
-
+  let isSaved = false;
+  const [visibleModalType, setVisibleModal] = useState<"Delete" | "Unsaved Changes" | undefined>(undefined);
+  const [discardCB, setDiscardCB] = useSettableCallback<() => void | undefined>(undefined);
   const dispatch = useAppDispatch();
   const editItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
@@ -66,7 +68,7 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
             })
           );
         }
-
+        isSaved = true;
         navigation.goBack();
       } catch (error) {
         Toast.show({
@@ -112,6 +114,20 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
     });
     return navButtons;
   }, [item, navigation]);
+
+  const ref = useRef<FormRef>();
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (!isSaved && ref.current?.isModified()) {
+        e.preventDefault();
+        setDiscardCB(() => navigation.dispatch(e.data?.action));
+        setVisibleModal("Unsaved Changes");
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, ref, setVisibleModal]);
   useCustomNav({
     title: `Edit ${item.name}`,
     rightButtons: navButtons,
@@ -145,23 +161,48 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {fields == null ? null : <Form fields={fields} onDone={editItemCb} navigation={navigation} />}
+      {fields == null ? null : <Form ref={ref} fields={fields} onDone={editItemCb} navigation={navigation} />}
       <AlertModal
-        isVisible={isModalVisible}
+        isVisible={visibleModalType === "Delete"}
         title={`Delete ${item.name}?`}
         text="Are you sure?"
         reverse
         confirmButton={{
           text: "Yes",
           onPress: () => {
-            setModalVisible(false);
+            setVisibleModal(undefined);
             deleteItemCb();
           },
         }}
         cancelButton={{
           text: "No",
           onPress: () => {
-            setModalVisible(false);
+            setVisibleModal(undefined);
+          },
+        }}
+      />
+      <AlertModal
+        isVisible={visibleModalType === "Unsaved Changes"}
+        title={`Discard changes?`}
+        text="You have some unsaved changes. Do you want to discard them?"
+        reverse
+        confirmButton={{
+          text: "Discard",
+          onPress: () => {
+            setVisibleModal(undefined);
+            if (discardCB) {
+              discardCB();
+              setDiscardCB(undefined);
+            } else {
+              navigation.goBack();
+            }
+          },
+        }}
+        cancelButton={{
+          text: "Stay",
+          onPress: () => {
+            setVisibleModal(undefined);
+            setDiscardCB(undefined);
           },
         }}
       />

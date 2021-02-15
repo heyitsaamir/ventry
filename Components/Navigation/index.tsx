@@ -11,10 +11,11 @@ import { SearchScreen } from "../../Pages/Search";
 import { ItemPredicate, OnItemTap, SearchContext } from "./searchContext";
 import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
 import { EmojiSelectorScreen } from "../../Pages/EmojiSelector";
-import { Icon, Text, ThemeContext } from "react-native-elements";
+import { Icon, ThemeContext } from "react-native-elements";
 import { ViewStyle } from "react-native";
 import { theme } from "../../Theme/theme";
 import { ExploreScreen } from "../../Pages/Explore";
+import { useSettableCallback } from "../../lib/hooks/useSettableCallback";
 
 const { Navigator: ExploreTabNavigator, Screen: ExploreTabScreen } = createStackNavigator<
   Pick<RouteParams, "Explore" | "ItemDetails">
@@ -48,18 +49,6 @@ const AccountNavigation = () => {
   );
 };
 
-function setCB<T>(setter: (setterCb?: () => T) => void) {
-  return (cb?: T) => {
-    setter(() => cb);
-  };
-}
-
-function useSettableCallback<T extends Function | undefined>(callback: T): [T, (cb: T) => void] {
-  const [cb, setCallback] = useState<T>(callback);
-  const settableCb = setCB<T>(setCallback);
-  return [cb, settableCb];
-}
-
 const BottomTabNavigator = () => {
   return (
     <TabNavigator
@@ -70,14 +59,14 @@ const BottomTabNavigator = () => {
       }}
     >
       <TabScreen
-        name="AccountTab"
-        component={AccountNavigation}
+        name="ExploreTab"
+        component={ExploreNavigation}
         options={{
-          tabBarLabel: "Items",
+          tabBarLabel: "Explore",
           tabBarIcon: ({ focused }) => (
             <Icon
-              type="font-awesome-5"
-              name="box-open"
+              name="search"
+              type="material"
               reverse
               raised
               size={10}
@@ -87,14 +76,14 @@ const BottomTabNavigator = () => {
         }}
       />
       <TabScreen
-        name="ExploreTab"
-        component={ExploreNavigation}
+        name="AccountTab"
+        component={AccountNavigation}
         options={{
-          tabBarLabel: "Explore",
+          tabBarLabel: "Items",
           tabBarIcon: ({ focused }) => (
             <Icon
-              name="search"
-              type="material"
+              type="font-awesome-5"
+              name="box-open"
               reverse
               raised
               size={10}

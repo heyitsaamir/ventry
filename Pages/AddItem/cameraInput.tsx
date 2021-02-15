@@ -96,6 +96,7 @@ export default function CameraInput(props: Props) {
         height={height}
         extraPadding={imagePadding}
         navHeight={headerHeight}
+        captureAudio={false}
         onCameraReady={setCameraReady}
         onBarCodeRead={(res) => {
           if (props.input.type !== "Barcode") return;

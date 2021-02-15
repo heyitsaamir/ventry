@@ -1,5 +1,5 @@
 import styled from "@emotion/native";
-import React, { useContext, useEffect, useState } from "react";
+import React, { forwardRef, Ref, useContext, useImperativeHandle, useState } from "react";
 import { Text, View } from "react-native";
 import { Button, Icon, ListItem, Theme, ThemeContext } from "react-native-elements";
 import { ScrollView, Switch, TouchableOpacity } from "react-native-gesture-handler";
@@ -97,6 +97,9 @@ export class FieldInfoArgs {
   };
 }
 
+export interface FormRef {
+  isModified(): boolean;
+}
 interface Props {
   fields: FieldInfoArgs;
   onDone: (fieldResults: FieldInfoArgs) => void;
@@ -104,22 +107,31 @@ interface Props {
   footer?: React.ReactNode;
 }
 
-const useTextInputState = (initialValue: string = "") => {
-  const [value, setValue] = React.useState(initialValue);
-  return { value, onChangeText: setValue };
+const useTextInputState = (initialValue: string | undefined) => {
+  const [value, setValue] = React.useState<undefined | string>(initialValue);
+  return { value, onChangeText: setValue } as {
+    value: string | undefined;
+    onChangeText: (newValue: string | undefined) => void;
+  };
 };
 
-const useNumberInputState = (initialValue: number = 1) => {
-  const [value, setValue] = React.useState(initialValue);
-  return { value, onChange: setValue };
+const useNumberInputState = (initialValue: number | undefined) => {
+  const [value, setValue] = React.useState<number | undefined>(initialValue);
+  return { value, onChange: setValue } as {
+    value: number | undefined;
+    onChange: (newValue: number | undefined) => void;
+  };
 };
 
-const useBooleanInputState = (initialValue: boolean = false) => {
-  const [value, setValue] = React.useState(initialValue);
-  return { value, onValueChange: setValue };
+const useBooleanInputState = (initialValue: boolean | undefined) => {
+  const [value, setValue] = React.useState<boolean | undefined>(initialValue);
+  return { value, onValueChange: setValue } as {
+    value: boolean | undefined;
+    onValueChange: (newValue: boolean | undefined) => void;
+  };
 };
 
-const Form = ({ fields, onDone, navigation, footer }: Props) => {
+const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }: Props, ref) => {
   const iconInputState = useTextInputState(fields.get(FieldType.icon)?.icon);
   const titleInputState = useTextInputState(fields.get(FieldType.title)?.title);
   const upcInputState = useTextInputState(fields.get(FieldType.upc)?.upc);
@@ -175,6 +187,39 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
     onDone(new FieldInfoArgs(fieldInfos));
   };
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      isModified() {
+        const isIconModified = fields.get(FieldType.icon)?.icon !== iconInputState.value;
+        const isTitleModified = fields.get(FieldType.title)?.title !== titleInputState.value;
+        const isUpcModified = fields.get(FieldType.upc)?.upc !== upcInputState.value;
+        const isQuantityModified = fields.get(FieldType.quantity)?.quantity !== quantityInputState.value;
+        const isIsContainerModified =
+          fields.get(FieldType.isContainer)?.isContainer !== isContainerInputState.value;
+        const isContainerIdModified =
+          fields.get(FieldType.containerId)?.containerId !== containerIdInputState.value;
+        return (
+          isIconModified ||
+          isTitleModified ||
+          isUpcModified ||
+          isQuantityModified ||
+          isIsContainerModified ||
+          isContainerIdModified
+        );
+      },
+    }),
+    [
+      fields,
+      iconInputState,
+      titleInputState,
+      upcInputState,
+      quantityInputState,
+      isContainerInputState,
+      containerIdInputState,
+    ]
+  );
+
   const basicItemFields = fields.has(FieldType.title) || fields.has(FieldType.isContainer);
   const detailsFields =
     fields.has(FieldType.quantity) || fields.has(FieldType.upc) || fields.has(FieldType.containerId);
@@ -225,7 +270,7 @@ const Form = ({ fields, onDone, navigation, footer }: Props) => {
       {footer}
     </ScrollView>
   );
-};
+});
 
 interface StringFieldSelector {
   value: string;
@@ -287,8 +332,9 @@ const IconSelector = ({
 
 const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) => {
   const [showScanner, setShowScanner] = useState(false);
-  const hasText = props.value !== props.originalTitle && props.value !== "";
-  const animation = useAnimation({ doAnimation: hasText, duration: 200 });
+  const hasModifiedText = props.value !== props.originalTitle;
+  const hasAnyText = !!props.value;
+  const animation = useAnimation({ doAnimation: hasModifiedText && hasAnyText, duration: 200 });
 
   return (
     <>
@@ -306,13 +352,13 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
           }}
         />
       </ListItem>
-      {props.originalTitle === "" && (
+      {
         <SimilarNameContainer
           style={{ height: animation.interpolate({ inputRange: [0, 1], outputRange: [0, 70] }) }}
         >
           {<SearchedSuggestion searchedText={props.value} />}
         </SimilarNameContainer>
-      )}
+      }
       <CameraInput
         isVisible={showScanner}
         dismiss={() => {
