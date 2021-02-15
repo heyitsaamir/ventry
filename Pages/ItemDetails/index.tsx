@@ -258,7 +258,7 @@ const PathIcon = styled(Icon)({ marginRight: 5 });
 const FabContainer = styled(View)({
   zIndex: 1000,
   position: "absolute",
-  bottom: 50,
+  bottom: 10,
   right: 30,
   display: "flex",
   flexDirection: "column",
