@@ -187,6 +187,13 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
         text="You have some unsaved changes. Do you want to discard them?"
         reverse
         confirmButton={{
+          text: "Stay",
+          onPress: () => {
+            setVisibleModal(undefined);
+            setDiscardCB(undefined);
+          },
+        }}
+        cancelButton={{
           text: "Discard",
           onPress: () => {
             setVisibleModal(undefined);
@@ -196,13 +203,6 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
             } else {
               navigation.goBack();
             }
-          },
-        }}
-        cancelButton={{
-          text: "Stay",
-          onPress: () => {
-            setVisibleModal(undefined);
-            setDiscardCB(undefined);
           },
         }}
       />

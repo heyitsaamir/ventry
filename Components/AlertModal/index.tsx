@@ -23,19 +23,22 @@ export const AlertModal = (props: Props) => {
   return (
     <Modal animationIn="bounceInUp" animationInTiming={500} isVisible={props.isVisible}>
       <AlertContainer theme={theme}>
-        {props.title && <StyledText h4>{props.title}</StyledText>}
+        {props.title && <Text h4>{props.title}</Text>}
         <StyledText>{props.text}</StyledText>
         <ButtonContainer reverse={props.reverse}>
           {props.cancelButton && (
-            <Button
-              type="outline"
-              containerStyle={{ flex: 1 }}
-              title={props.cancelButton.text}
-              onPress={props.cancelButton.onPress}
-            />
+            <>
+              <Button
+                type="outline"
+                containerStyle={{ flex: 1 }}
+                title={props.cancelButton.text}
+                onPress={props.cancelButton.onPress}
+              />
+              <Spacer />
+            </>
           )}
           <Button
-            containerStyle={{ flex: 1, marginHorizontal: 5 }}
+            containerStyle={{ flex: 1 }}
             title={props.confirmButton.text}
             onPress={props.confirmButton.onPress}
           />
@@ -57,11 +60,15 @@ const AlertContainer = styled(View)<{ theme: Theme }>(({ theme }) => ({
 }));
 
 const StyledText = styled(Text)({
-  margin: 5,
+  marginTop: 10,
+  marginBottom: 15,
 });
 
 const ButtonContainer = styled(View)<{ reverse?: boolean }>((props) => ({
   display: "flex",
   flexDirection: props.reverse ? "row-reverse" : "row",
   justifyContent: "center",
+  alignItems: "center",
 }));
+
+const Spacer = styled(View)({ width: 10, flex: 0 });
