@@ -21,7 +21,7 @@ interface Props {
 export const AlertModal = (props: Props) => {
   const { theme } = useContext(ThemeContext);
   return (
-    <Modal animationIn="bounceInUp" animationInTiming={500} isVisible={props.isVisible}>
+    <Modal animationIn="bounceInUp" animationInTiming={800} isVisible={props.isVisible}>
       <AlertContainer theme={theme}>
         {props.title && <Text h4>{props.title}</Text>}
         <StyledText>{props.text}</StyledText>
@@ -56,7 +56,7 @@ const AlertContainer = styled(View)<{ theme: Theme }>(({ theme }) => ({
   width: "100%",
   bottom: 50,
   padding: 10,
-  borderRadius: 10,
+  borderRadius: 5,
 }));
 
 const StyledText = styled(Text)({

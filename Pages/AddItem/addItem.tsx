@@ -101,6 +101,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
         isVisible={visibleModalType === "Unsaved Changes"}
         title={`Discard changes?`}
         text="You have some unsaved changes. Do you want to discard them?"
+        reverse
         confirmButton={{
           text: "Stay",
           onPress: () => {
