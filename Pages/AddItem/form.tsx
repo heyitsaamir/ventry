@@ -360,6 +360,7 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
         </SimilarNameContainer>
       }
       <CameraInput
+        title="Scan your item's name for faster input"
         isVisible={showScanner}
         dismiss={() => {
           setShowScanner(false);
@@ -429,6 +430,7 @@ const UPCSelector = (props: StringFieldSelector) => {
         />
       </ListItem>
       <CameraInput
+        title="Scan your item's barcode"
         isVisible={showScanner}
         dismiss={() => {
           setShowScanner(false);

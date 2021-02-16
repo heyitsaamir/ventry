@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { View, Dimensions } from "react-native";
 import { RNCamera, Point, Size, TrackedTextFeature } from "react-native-camera";
-import { Icon, Text } from "react-native-elements";
+import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
@@ -20,13 +20,14 @@ interface TextInputType {
 type InputType = BarcodeInputType | TextInputType;
 
 interface Props {
+  title?: string;
   isVisible: boolean;
   input: InputType;
   dismiss: () => void;
 }
 
 export default function CameraInput(props: Props) {
-  const [type] = useState<"front" | "back">("back");
+  const { theme } = useContext(ThemeContext);
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [ratio, setRatio] = useState("4:3");
   const [imagePadding, setImagePadding] = useState(0);
@@ -85,13 +86,7 @@ export default function CameraInput(props: Props) {
   };
 
   return (
-    <Modal
-      style={{ margin: 0 }}
-      isVisible={props.isVisible}
-      onBackdropPress={props.dismiss}
-      hasBackdrop={true}
-      onBackButtonPress={props.dismiss}
-    >
+    <Modal style={{ margin: 0 }} isVisible={props.isVisible} onBackButtonPress={props.dismiss}>
       <Camera
         height={height}
         extraPadding={imagePadding}
@@ -117,22 +112,25 @@ export default function CameraInput(props: Props) {
         }}
         ratio={ratio}
         ref={cameraRef}
-        type={type}
+        type={"back"}
       >
+        {props.title && (
+          <TitleContainer theme={theme}>
+            <Text style={{ color: theme.colors.text }}>{props.title}</Text>
+          </TitleContainer>
+        )}
         {scannedText?.bounds && (
           <View
             style={{
               borderColor: "wheat",
-              borderWidth: 1,
+              borderWidth: 3,
               position: "absolute",
               top: scannedText.bounds.origin.y,
               right: scannedText.bounds.origin.x,
               width: scannedText.bounds.size.width,
               height: scannedText.bounds.size.height,
             }}
-          >
-            <Text>{scannedText.text}</Text>
-          </View>
+          />
         )}
       </Camera>
       <InfoContainer height={height} topPadding={imagePadding}>
@@ -177,10 +175,8 @@ const Camera = styled(RNCamera)<{
   extraPadding: number;
   navHeight: number;
 }>((props) => ({
-  justifyContent: "flex-end",
   alignContent: "center",
   height: props.height,
-  top: props.navHeight + props.extraPadding,
   width: "100%",
 }));
 
@@ -194,14 +190,12 @@ const InfoContainer = styled(View)<{ height: number; topPadding: number }>((prop
   alignItems: "flex-end",
 }));
 
-const Container = styled(View)<{
-  height?: number;
-  extraPadding: number;
-  navHeight: number;
-}>((props) => ({
-  top: props.navHeight + props.extraPadding,
-  height: props.height,
-  width: "100%",
+const TitleContainer = styled(View)<{ theme: Theme }>((props) => ({
+  height: 50,
+  backgroundColor: props.theme.colors.background,
+  padding: 5,
+  alignItems: "center",
+  justifyContent: "center",
 }));
 
 const sizeForTB = (tb: TrackedTextFeature) => tb.bounds.size.width * tb.bounds.size.height;
