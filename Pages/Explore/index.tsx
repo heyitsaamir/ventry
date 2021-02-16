@@ -26,7 +26,6 @@ export const ExploreScreen = ({ navigation }: Props) => {
     doAnimation: !!searchInputState.value,
     duration: 200,
   });
-  const [showCamera, setShowCamera] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const navButtons: RightNavButtonElement = (props) => {
     return (
@@ -38,12 +37,6 @@ export const ExploreScreen = ({ navigation }: Props) => {
           { flexDirection: "row" },
         ]}
       >
-        <NavIcon
-          color={props.tintColor}
-          type="material-community"
-          name="camera"
-          onPress={() => setShowCamera(true)}
-        />
         <NavIcon
           color={props.tintColor}
           type="material-community"
@@ -97,12 +90,6 @@ export const ExploreScreen = ({ navigation }: Props) => {
         <View style={{ flexDirection: "row" }}>
           <Button
             type="outline"
-            icon={{ type: "material-community", name: "camera" }}
-            containerStyle={{ flex: 1, margin: 5 }}
-            onPress={() => setShowCamera(true)}
-          />
-          <Button
-            type="outline"
             icon={{ type: "material-community", name: "barcode-scan" }}
             containerStyle={{ flex: 1, margin: 5 }}
             onPress={() => setShowScanner(true)}
@@ -117,28 +104,18 @@ export const ExploreScreen = ({ navigation }: Props) => {
         />
       )}
       <CameraInput
-        isVisible={showCamera || showScanner}
+        title={`Scan your item's barcode`}
+        isVisible={showScanner}
         dismiss={() => {
-          setShowCamera(false);
           setShowScanner(false);
         }}
-        input={
-          showCamera
-            ? {
-                type: "Text",
-                onTextScanned: (text) => {
-                  searchInputState.onChangeText(text);
-                  setShowCamera(false);
-                },
-              }
-            : {
-                type: "Barcode",
-                onBarcodeScanned: (text) => {
-                  searchInputState.onChangeText(text);
-                  setShowScanner(false);
-                },
-              }
-        }
+        input={{
+          type: "Barcode",
+          onBarcodeScanned: (text) => {
+            searchInputState.onChangeText(text);
+            setShowScanner(false);
+          },
+        }}
       />
     </SafeAreaView>
   );
