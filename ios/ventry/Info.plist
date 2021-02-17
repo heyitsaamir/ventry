@@ -70,5 +70,7 @@
 	<string>Allow $(PRODUCT_NAME) to use the camera</string>
 	<key>CFBundleDisplayName</key>
 	<string>ventry</string>
+	<key>RCTAsyncStorageExcludeFromBackup</key>
+	<false/>
 </dict>
 </plist>
