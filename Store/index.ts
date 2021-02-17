@@ -13,15 +13,15 @@ import {
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import rootReducer from "./rootReducer";
-import { v0Migration } from "./migrations/v0";
-import { v1Migration } from "./migrations/v1";
+import { v0Migration, v1Migration } from "./migrations";
 
 const persistedReducer = persistReducer(
   {
     key: "root",
     storage: AsyncStorage,
     version: 1,
-    migrate: createMigrate({ "0": v0Migration, "1": v1Migration }, { debug: true }),
+    migrate: createMigrate({ "0": v0Migration, "1": v1Migration }),
+    blacklist: ['inventory']
   },
   rootReducer
 );

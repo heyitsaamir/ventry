@@ -41,6 +41,11 @@ interface V1State {
   inventory: UndoableState<InventoryState>;
 }
 
+/*
+  Changes:
+    1. Added undo, so past, present and future arrays exist
+    2. historyIdBYItemId also exists now
+*/
 export const v1Migration = (state?: V0State & { _persist: any }): V1State & { _persist: any } => {
   return {
     ...state,
