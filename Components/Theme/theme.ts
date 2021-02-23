@@ -1,5 +1,4 @@
-import { Theme } from "react-native-elements";
-import { color } from "react-native-reanimated";
+import { Theme } from "./theme-context";
 
 const colors = {
   jet: "#353535ff",
@@ -19,5 +18,5 @@ export const theme: Theme = {
     border: colors.gainsboro,
     secondary: colors["indigo-dye"],
     searchBg: colors.ming,
-  },
+  } as Theme['colors'],
 };

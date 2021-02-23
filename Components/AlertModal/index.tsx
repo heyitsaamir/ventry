@@ -2,7 +2,8 @@ import styled from "@emotion/native";
 import React, { useContext } from "react";
 import { View } from "react-native";
 import Modal, { ModalProps } from "react-native-modal";
-import { Button, Text, Theme, ThemeContext } from "react-native-elements";
+import { Button, Text, ThemeContext } from "react-native-elements";
+import { useTheme, ThemeProps } from "../Theme";
 
 interface ButtonProps {
   text: string;
@@ -19,7 +20,7 @@ interface Props {
 }
 
 export const AlertModal = (props: Props) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return (
     <Modal animationIn="bounceInUp" animationInTiming={800} isVisible={props.isVisible}>
       <AlertContainer theme={theme}>
@@ -48,7 +49,7 @@ export const AlertModal = (props: Props) => {
   );
 };
 
-const AlertContainer = styled(View)<{ theme: Theme }>(({ theme }) => ({
+const AlertContainer = styled(View)<ThemeProps>(({ theme }) => ({
   display: "flex",
   borderWidth: 1,
   backgroundColor: theme.colors.white,

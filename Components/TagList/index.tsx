@@ -17,7 +17,12 @@ const TagList = ({ tags, onTap }: Props) => {
   return (
     <Container horizontal>
       {tags.map((tag) => (
-        <Tag type="outline" key={`TagList-index-${tag.id}`} onPress={() => onTap(tag)} title={tag.value} />
+        <Tag
+          type="outline"
+          key={`TagList-index-${tag.id}`}
+          onPress={() => onTap && onTap(tag)}
+          title={tag.value}
+        />
       ))}
     </Container>
   );

@@ -16,7 +16,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   let isSaved = false;
   const [parentId] = useState(route.params?.parentItemId || "");
   const [visibleModalType, setVisibleModal] = useState<"Unsaved Changes" | undefined>(undefined);
-  const [discardCB, setDiscardCB] = useSettableCallback<() => void | undefined>(undefined);
+  const [discardCB, setDiscardCB] = useSettableCallback<(() => void) | undefined>(undefined);
 
   const dispatch = useAppDispatch();
   const addItemCb = useCallback(
@@ -80,7 +80,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
     return new FieldInfoArgs(emptyFields);
   }, [parentId]);
 
-  const ref = useRef<FormRef>();
+  const ref = useRef<FormRef | null>(null);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {

@@ -15,7 +15,7 @@ export const getParentPath = (item: Item, inventoryState: InventoryState) => {
 export const IsContainer = (item: Item): item is ContainerItem => item.type === "Container";
 export const IsNonContainer = (item: Item): item is NonContainerItem => item.type === "NonContainer";
 
-export const getNumberOfItemsInside = (item: ContainerItem, inventoryState: InventoryState) => {
+export const getNumberOfItemsInside = (item: ContainerItem, inventoryState: InventoryState): number => {
   return item.itemsInside
     .map((itemId) => inventoryState.items[itemId])
     .reduce((total, item) => {

@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { NavigationContainer, Theme } from "@react-navigation/native";
-import { HomeScreen } from "../../Pages/Home";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { RouteParams } from "./Routes";
-import { DetailsScreen } from "../../Pages/Details";
 import { AddItemScreen, EditItemScreen } from "../../Pages/AddItem";
 import { ItemDetailsScreen } from "../../Pages/ItemDetails";
 import { SearchScreen } from "../../Pages/Search";
@@ -13,9 +11,9 @@ import { OnEmojiTap, EmojiSelectorContext } from "./emojiSelectorContext";
 import { EmojiSelectorScreen } from "../../Pages/EmojiSelector";
 import { Icon, ThemeContext } from "react-native-elements";
 import { ViewStyle } from "react-native";
-import { theme } from "../../Theme/theme";
 import { ExploreScreen } from "../../Pages/Explore";
 import { useSettableCallback } from "../../lib/hooks/useSettableCallback";
+import { theme } from "../Theme";
 
 const { Navigator: ExploreTabNavigator, Screen: ExploreTabScreen } = createStackNavigator<
   Pick<RouteParams, "Explore" | "ItemDetails">
@@ -97,9 +95,9 @@ const BottomTabNavigator = () => {
 };
 
 export const AppNavigator = () => {
-  const [onItemTap, setOnItemTap] = useSettableCallback<OnItemTap | undefined>(undefined);
-  const [onEmojiTap, setOnEmojiTap] = useSettableCallback<OnEmojiTap | undefined>(undefined);
-  const [predicate, setPredicate] = useSettableCallback<ItemPredicate | undefined>(undefined);
+  const [onItemTap, setOnItemTap] = useSettableCallback<OnItemTap>(undefined);
+  const [onEmojiTap, setOnEmojiTap] = useSettableCallback<OnEmojiTap>(undefined);
+  const [predicate, setPredicate] = useSettableCallback<ItemPredicate>(undefined);
 
   const themeContext = React.useContext(ThemeContext);
 

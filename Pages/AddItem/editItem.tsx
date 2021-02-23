@@ -28,7 +28,7 @@ export const EditItemScreen = ({ route, ...restProps }: Props) => {
 const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps<"EditItem"> }) => {
   let isSaved = false;
   const [visibleModalType, setVisibleModal] = useState<"Delete" | "Unsaved Changes" | undefined>(undefined);
-  const [discardCB, setDiscardCB] = useSettableCallback<() => void | undefined>(undefined);
+  const [discardCB, setDiscardCB] = useSettableCallback<() => void>(undefined);
   const dispatch = useAppDispatch();
   const editItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
@@ -110,12 +110,12 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
     navButtons.push({
       name: "delete",
       type: "material",
-      onPress: () => setModalVisible(true),
+      onPress: () => setVisibleModal("Delete"),
     });
     return navButtons;
   }, [item, navigation]);
 
-  const ref = useRef<FormRef>();
+  const ref = useRef<FormRef>(null);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {

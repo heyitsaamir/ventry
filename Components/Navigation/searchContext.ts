@@ -8,10 +8,10 @@ export const SearchContext = React.createContext<{
   onItemTap: OnItemTap | undefined;
   setOnItemTap: (fn?: OnItemTap) => void;
   predicate: ItemPredicate | undefined;
-  setPredicate?: (fn?: ItemPredicate) => void;
+  setPredicate: (fn?: ItemPredicate) => void;
 }>({
   onItemTap: undefined,
-  setOnItemTap: (fn?: OnItemTap) => {},
+  setOnItemTap: (fn?: OnItemTap) => { },
   predicate: undefined,
-  setPredicate: undefined,
+  setPredicate: (fn?: ItemPredicate) => { },
 });

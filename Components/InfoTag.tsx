@@ -1,15 +1,14 @@
 import styled from "@emotion/native";
 import React, { useContext } from "react";
 import { Text } from "react-native";
-import { ThemeContext } from "react-native-elements";
-import { ThemeProps } from "./Theme/types";
+import { ThemeProps, useTheme } from "./Theme";
 
 interface Props {
   info: string;
 }
 
 const InfoTag = (props: Props) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return <Container theme={theme}>{props.info}</Container>;
 };
 

@@ -1,10 +1,11 @@
-import React, { ComponentProps, useContext, useMemo, useRef, useState } from "react";
+import React, { ComponentProps, useMemo, useRef, useState } from "react";
 import { SafeAreaView, View } from "react-native";
-import { Button, Icon, Input, SearchBar, Text, ThemeContext } from "react-native-elements";
+import { Button, Icon, Input, SearchBar, Text } from "react-native-elements";
 import Animated, { Easing } from "react-native-reanimated";
 import { NavIcon } from "../../Components/Navigation/RightNavItemContainer";
 import { NavigatorProps, ScreenProps } from "../../Components/Navigation/Routes";
 import useCustomNav, { RightNavButtonElement } from "../../Components/Navigation/useCustonNav";
+import { useTheme } from "../../Components/Theme";
 import { useAnimation } from "../../lib/hooks/useAnimation";
 import CameraInput from "../AddItem/cameraInput";
 import { SearchedItems } from "../Search";
@@ -21,7 +22,7 @@ const useInputState = (initialValue = "") => {
 
 export const ExploreScreen = ({ navigation }: Props) => {
   const searchInputState = useInputState();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const animation = useAnimation({
     doAnimation: !!searchInputState.value,
     duration: 200,
@@ -112,7 +113,7 @@ export const ExploreScreen = ({ navigation }: Props) => {
         input={{
           type: "Barcode",
           onBarcodeScanned: (text) => {
-            searchInputState.onChangeText(text);
+            if (text != null) searchInputState.onChangeText(text);
             setShowScanner(false);
           },
         }}

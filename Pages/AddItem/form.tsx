@@ -1,7 +1,7 @@
 import styled from "@emotion/native";
-import React, { forwardRef, Ref, useContext, useImperativeHandle, useState } from "react";
+import React, { forwardRef, useContext, useImperativeHandle, useState } from "react";
 import { Text, View } from "react-native";
-import { Button, Icon, ListItem, Theme, ThemeContext } from "react-native-elements";
+import { Button, Icon, ListItem } from "react-native-elements";
 import { ScrollView, Switch, TouchableOpacity } from "react-native-gesture-handler";
 import { useSelector } from "react-redux";
 import { EmojiSelectorContext } from "../../Components/Navigation/emojiSelectorContext";
@@ -13,10 +13,11 @@ import { Item, State } from "../../Store/types";
 import CameraInput from "./cameraInput";
 import { IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { useAnimation } from "../../lib/hooks/useAnimation";
-import Animated, { Easing } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { SearchedItems } from "../Search";
 import TagList from "../../Components/TagList";
 import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
+import { ThemeProps, useTheme } from "../../Components/Theme";
 
 export enum FieldType {
   icon,
@@ -107,28 +108,21 @@ interface Props {
   footer?: React.ReactNode;
 }
 
-const useTextInputState = (initialValue: string | undefined) => {
-  const [value, setValue] = React.useState<undefined | string>(initialValue);
-  return { value, onChangeText: setValue } as {
-    value: string | undefined;
-    onChangeText: (newValue: string | undefined) => void;
-  };
+const useTextInputState: <T = string | undefined>(
+  initialValue: T
+) => { value: T; onChangeText: (value: T) => void } = (initialValue) => {
+  const [value, setValue] = React.useState(initialValue);
+  return { value, onChangeText: setValue };
 };
 
 const useNumberInputState = (initialValue: number | undefined) => {
   const [value, setValue] = React.useState<number | undefined>(initialValue);
-  return { value, onChange: setValue } as {
-    value: number | undefined;
-    onChange: (newValue: number | undefined) => void;
-  };
+  return { value, onChange: setValue };
 };
 
 const useBooleanInputState = (initialValue: boolean | undefined) => {
   const [value, setValue] = React.useState<boolean | undefined>(initialValue);
-  return { value, onValueChange: setValue } as {
-    value: boolean | undefined;
-    onValueChange: (newValue: boolean | undefined) => void;
-  };
+  return { value, onValueChange: setValue };
 };
 
 const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }: Props, ref) => {
@@ -137,7 +131,9 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
   const upcInputState = useTextInputState(fields.get(FieldType.upc)?.upc);
   const quantityInputState = useNumberInputState(fields.get(FieldType.quantity)?.quantity);
   const isContainerInputState = useBooleanInputState(fields.get(FieldType.isContainer)?.isContainer);
-  const containerIdInputState = useTextInputState(fields.get(FieldType.containerId)?.containerId);
+  const containerIdInputState = useTextInputState<string>(
+    fields.get(FieldType.containerId)?.containerId ?? ""
+  );
 
   const onSubmit = () => {
     const fieldInfos: FieldInfos[] = [];
@@ -231,7 +227,7 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
           {...iconInputState}
           navigation={navigation}
           disabled={fields.isDisabled(FieldType.icon)}
-          isContainer={isContainerInputState.value}
+          isContainer={isContainerInputState.value ?? false}
         />
       )}
       {basicItemFields && (
@@ -273,19 +269,19 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
 });
 
 interface StringFieldSelector {
-  value: string;
+  value: string | undefined;
   onChangeText: (newValue: string) => void;
   disabled?: boolean;
 }
 
 interface NumberFieldSelector {
-  value: number;
+  value: number | undefined;
   onChange: (newValue: number) => void;
   disabled?: boolean;
 }
 
 interface BooleanFieldSelector {
-  value: boolean;
+  value: boolean | undefined;
   onValueChange: (newValue: boolean) => void;
   disabled?: boolean;
 }
@@ -300,7 +296,7 @@ const IconSelector = ({
   navigation: NavigatorProps;
   isContainer: boolean;
 }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const emojiContext = useContext(EmojiSelectorContext);
 
   const navigateEmojiSelector = () => {
@@ -356,7 +352,7 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
         <SimilarNameContainer
           style={{ height: animation.interpolate({ inputRange: [0, 1], outputRange: [0, 70] }) }}
         >
-          {<SearchedSuggestion searchedText={props.value} />}
+          {<SearchedSuggestion searchedText={props.value ?? ""} />}
         </SimilarNameContainer>
       }
       <CameraInput
@@ -368,7 +364,7 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
         input={{
           type: "Text",
           onTextScanned: (text) => {
-            props.onChangeText(text);
+            if (text) props.onChangeText(text);
             setShowScanner(false);
           },
         }}
@@ -378,7 +374,7 @@ const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) =
 };
 
 const SearchedSuggestion = ({ searchedText }: { searchedText: string }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   if (!searchedText) return null;
   return (
     <View>
@@ -438,7 +434,7 @@ const UPCSelector = (props: StringFieldSelector) => {
         input={{
           type: "Barcode",
           onBarcodeScanned: (text) => {
-            props.onChangeText(text);
+            if (text) props.onChangeText(text);
             setShowScanner(false);
           },
         }}
@@ -459,7 +455,7 @@ const NumberSelector = (props: NumberFieldSelector) => {
 };
 
 const IsContainerSelector = (props: BooleanFieldSelector & Omit<IsContainerField, "isContainer">) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return (
     <ListItem bottomDivider>
       <ListItem.Content>
@@ -468,8 +464,9 @@ const IsContainerSelector = (props: BooleanFieldSelector & Omit<IsContainerField
       </ListItem.Content>
       <Switch
         {...props}
+        value={props.value ?? false}
         ios_backgroundColor={theme.colors.border}
-        trackColor={{ true: theme.colors.secondary, false: undefined }}
+        trackColor={{ true: theme.colors.secondary, false: theme.colors.border }}
       />
     </ListItem>
   );
@@ -481,7 +478,7 @@ const ContainerIdSelector = ({
   navigation,
   disabled,
   itemId,
-}: StringFieldSelector & { navigation: NavigatorProps; itemId: string | undefined }) => {
+}: StringFieldSelector & { value: string; navigation: NavigatorProps; itemId: string | undefined }) => {
   const searchContext = useContext(SearchContext);
   const containers = useSelector<State, InventoryState["items"]>(
     (state: State) => state.inventory.present.items
@@ -494,7 +491,7 @@ const ContainerIdSelector = ({
       searchContext.setPredicate(undefined);
       navigation.goBack();
     });
-    searchContext.setPredicate((items) => {
+    searchContext.setPredicate!((items) => {
       // Only allow containers that are not children of this item
       // otherwise we'll get cycles
       const containersOnly = Object.values(items).filter(IsContainer);
@@ -533,7 +530,7 @@ const ContainerIdSelector = ({
 };
 
 const InputContainer = ({ label, children }: { label: string; children: React.ReactNode }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return (
     <View>
       <View
@@ -579,7 +576,7 @@ const SubmitButton = styled(Button)({
   marginVertical: 20,
 });
 
-const SimilarNameText = styled(Text)<{ theme: Theme }>((props) => ({
+const SimilarNameText = styled(Text)<ThemeProps>((props) => ({
   marginTop: 5,
   marginLeft: 5,
   color: props.theme.colors.text,

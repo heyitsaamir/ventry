@@ -10,6 +10,7 @@ interface Props extends ScreenProps<"EmojiSelector"> {
 
 export const EmojiSelectorScreen = ({}: Props) => {
   const { onEmojiTap } = useContext(EmojiSelectorContext);
+  if (!onEmojiTap) return null;
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

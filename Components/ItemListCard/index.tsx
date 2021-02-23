@@ -7,7 +7,7 @@ import { IsContainer } from "../../lib/modelUtilities/itemUtils";
 
 interface Props {
   itemId: string;
-  onTap: (item: Item) => void;
+  onTap?: (item: Item) => void;
 }
 
 export const ItemListCard = ({ itemId, onTap }: Props) => {
@@ -24,7 +24,7 @@ export const ItemListCard = ({ itemId, onTap }: Props) => {
   }
 
   return (
-    <ListItem bottomDivider onPress={() => onTap(item)}>
+    <ListItem bottomDivider onPress={() => onTap && onTap(item)}>
       <ItemIcon icon={item.icon} size="sm" isContainer={IsContainer(item)} />
       <ListItem.Content>
         <ListItem.Title>{item.name}</ListItem.Title>

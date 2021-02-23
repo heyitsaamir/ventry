@@ -1,3 +1,3 @@
-import { Theme as RNETheme } from "react-native-elements";
+import { Theme } from "../../Theme/theme-context";
 
-export type ThemeProps = { theme: RNETheme<{}> };
+export type ThemeProps = { theme: Theme };

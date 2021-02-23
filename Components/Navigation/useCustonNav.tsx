@@ -8,7 +8,7 @@ export interface RightNavButtonOptions {
   onPress: () => void;
 }
 
-export type RightNavButtonElement = (props: { tintColor: string }) => JSX.Element;
+export type RightNavButtonElement = (props: { tintColor?: string }) => JSX.Element;
 
 interface Options {
   title?: string;

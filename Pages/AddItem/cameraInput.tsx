@@ -1,20 +1,21 @@
 import React, { useState, useRef, useContext } from "react";
 import { View, Dimensions } from "react-native";
 import { RNCamera, Point, Size, TrackedTextFeature } from "react-native-camera";
-import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
+import { Icon, Text } from "react-native-elements";
 import styled from "@emotion/native";
 import { useHeaderHeight } from "@react-navigation/stack";
 import { useThrottle } from "@react-hook/throttle";
 import Modal from "react-native-modal";
+import { ThemeProps, useTheme } from "../../Components/Theme";
 
 interface BarcodeInputType {
   type: "Barcode";
-  onBarcodeScanned: (barcode: string) => void;
+  onBarcodeScanned: (barcode: string | undefined) => void;
 }
 
 interface TextInputType {
   type: "Text";
-  onTextScanned: (text: string) => void;
+  onTextScanned: (text: string | undefined) => void;
 }
 
 type InputType = BarcodeInputType | TextInputType;
@@ -27,11 +28,11 @@ interface Props {
 }
 
 export default function CameraInput(props: Props) {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const [isRatioSet, setIsRatioSet] = useState(false);
   const [ratio, setRatio] = useState("4:3");
   const [imagePadding, setImagePadding] = useState(0);
-  const cameraRef = useRef<RNCamera>();
+  const cameraRef = useRef<RNCamera | null>(null);
   const [scannedText, setScannedText] = useThrottle<{
     text: string;
     bounds?: { origin: Point; size: Size };
@@ -65,7 +66,7 @@ export default function CameraInput(props: Props) {
                 ratioString: ratio,
               };
             } else {
-              closestRatio;
+              return closestRatio;
             }
           },
           { diff: Infinity, ratio: 4 / 3, ratioString: "4:3" } as {
@@ -156,10 +157,10 @@ export default function CameraInput(props: Props) {
             onPress={() => {
               switch (props.input.type) {
                 case "Barcode":
-                  props.input.onBarcodeScanned(scannedText.text);
+                  props.input.onBarcodeScanned(scannedText?.text);
                   break;
                 case "Text":
-                  props.input.onTextScanned(scannedText.text);
+                  props.input.onTextScanned(scannedText?.text);
                   break;
               }
             }}
@@ -190,7 +191,7 @@ const InfoContainer = styled(View)<{ height: number; topPadding: number }>((prop
   alignItems: "flex-end",
 }));
 
-const TitleContainer = styled(View)<{ theme: Theme }>((props) => ({
+const TitleContainer = styled(View)<ThemeProps>((props) => ({
   height: 50,
   backgroundColor: props.theme.colors.background,
   padding: 5,

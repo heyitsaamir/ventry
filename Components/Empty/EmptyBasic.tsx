@@ -1,7 +1,8 @@
 import styled from "@emotion/native";
-import React, { useContext } from "react";
+import React from "react";
 import { View } from "react-native";
-import { Icon, IconProps, Text, ThemeContext } from "react-native-elements";
+import { Icon, IconProps, Text } from "react-native-elements";
+import { useTheme } from "../Theme";
 
 interface Props {
   text: string;
@@ -10,7 +11,7 @@ interface Props {
 }
 export const EmptyBasic = (props: Props) => {
   const { text, icon } = props;
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   return (
     <Container flexDirection={props.direction}>
       <Icon {...icon} reverse raised color={theme.colors.primary} />

@@ -7,6 +7,7 @@ import { useFuse } from "../../lib/fuse/useFuse";
 import { SearchList } from "./list";
 import { Icon, SearchBar, ThemeContext } from "react-native-elements";
 import { ItemPredicate, OnItemTap, SearchContext } from "../../Components/Navigation/searchContext";
+import { useTheme } from "../../Components/Theme";
 
 interface Props extends ScreenProps<"Search"> {
   navigation: NavigatorProps<"Search">;
@@ -18,7 +19,7 @@ const useInputState = (initialValue = "") => {
 
 export const SearchScreen = ({}: Props) => {
   const searchInputState = useInputState();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const { onItemTap, predicate } = useContext(SearchContext);
 
   return (
@@ -47,8 +48,8 @@ export const SearchedItems = ({
 }: {
   searchTerm: string;
   predicate?: ItemPredicate;
-  onItemTap: OnItemTap;
-  display: (props: { items: Item[]; onItemTap: OnItemTap }) => JSX.Element;
+  onItemTap?: OnItemTap;
+  display: (props: { items: Item[]; onItemTap?: OnItemTap }) => JSX.Element | null;
 }) => {
   const items = useSelector<State, Item[]>((state) => {
     if (predicate) {

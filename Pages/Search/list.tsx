@@ -6,7 +6,7 @@ import { ItemListCard } from "../../Components/ItemListCard";
 interface Props {
   items: Item[];
   header?: React.ReactElement;
-  onItemTap: (item: Item) => void;
+  onItemTap?: (item: Item) => void;
 }
 
 export const SearchList = ({ items, header, onItemTap }: Props) => {

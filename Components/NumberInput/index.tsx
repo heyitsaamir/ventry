@@ -1,18 +1,19 @@
-import { Text, ThemeContext } from "react-native-elements";
-import React, { useContext } from "react";
+import { Text } from "react-native-elements";
+import React from "react";
 import { View } from "react-native";
 import InputSpinner from "react-native-input-spinner";
+import { useTheme } from "../Theme";
 
 interface Props {
   label?: string;
   disabled?: boolean;
-  value: number;
-  onChange: (number) => void;
+  value: number | undefined;
+  onChange: (number: number) => void;
 }
 
 const NumberInputWrapper = (props: Props) => {
   const { label, ...restProps } = props;
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
 
   return (
     <View>

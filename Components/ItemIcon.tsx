@@ -1,7 +1,8 @@
 import styled from "@emotion/native";
 import React, { useContext } from "react";
 import { StyleProp, Text, View, ViewStyle } from "react-native";
-import { ThemeContext, Icon } from "react-native-elements";
+import { Icon } from "react-native-elements";
+import { useTheme } from "./Theme";
 
 interface Props {
   icon?: string;
@@ -11,7 +12,7 @@ interface Props {
 }
 
 export default function ItemIcon({ icon, size: propsSize, isContainer, style }: Props) {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const size = propsSize === "lg" ? 80 : propsSize === "md" ? 65 : 40;
   return (
     <IconContainer
