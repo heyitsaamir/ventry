@@ -12,7 +12,7 @@ const InfoTag = (props: Props) => {
   return <Container theme={theme}>{props.info}</Container>;
 };
 
-const Container = styled(Text)<ThemeProps>((props) => ({
+const Container = styled(Text)((props) => ({
   padding: 5,
   borderRadius: 5,
   borderColor: props.theme.colors.greyOutline,

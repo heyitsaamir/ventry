@@ -1,10 +1,10 @@
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Animated, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
 import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
 import { NavigatorProps, ScreenProps, useNav } from "../../Components/Navigation/Routes";
-import { Icon, Text, Theme, ThemeContext } from "react-native-elements";
+import { Icon, Text } from "react-native-elements";
 import ItemIcon from "../../Components/ItemIcon";
 import { getNumberOfItemsInside, getParentPath, IsContainer } from "../../lib/modelUtilities/itemUtils";
 import { ThemeProps } from "../../Components/Theme/types";
@@ -19,6 +19,7 @@ import { EmptyBasic } from "../../Components/Empty/EmptyBasic";
 import { useAppDispatch } from "../../Store";
 import { changeInQuantity } from "../../Store/inventory";
 import { ItemCard } from "./Card";
+import { Theme, useTheme } from "../../Components/Theme";
 
 type Route = {
   key: "first" | "second";
@@ -34,7 +35,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
   const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
   const [index, setIndex] = React.useState(0);
   const nav = useNav();
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   const dispatch = useAppDispatch();
   const navButtons = useMemo(() => {
     if (!item) return [];
@@ -106,8 +107,8 @@ export const ItemDetailsScreen = ({ route }: Props) => {
             reverse
             onPress={onCreateNewItem}
             color={theme.colors.primary}
-            type="material"
-            name="add"
+            type="material-community"
+            name="plus"
             size={30}
           />
         ) : (
@@ -116,16 +117,16 @@ export const ItemDetailsScreen = ({ route }: Props) => {
               reverse
               onPress={increaseInQuantity}
               color={theme.colors.primary}
-              type="material"
-              name="add"
+              type="material-community"
+              name="arrow-up-bold"
               size={30}
             />
             <Icon
               reverse
               onPress={removeInQuantity}
               color={theme.colors.primary}
-              type="material"
-              name="remove"
+              type="material-community"
+              name="arrow-down-bold"
               size={30}
             />
           </>
@@ -216,7 +217,7 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
 };
 
 const InfoBar = ({ item, contains }: { item: Item; contains?: number }) => {
-  const { theme } = useContext(ThemeContext);
+  const { theme } = useTheme();
   if (!IsContainer(item)) return null;
   return (
     <InfoBarContainer theme={theme}>
@@ -242,11 +243,11 @@ const TitleContent = styled(View)({});
 
 const ItemIconContainer = styled(ItemIcon)({ marginLeft: 5, marginRight: 15 });
 
-const ContainerPath = styled(Text)<ThemeProps>((props) => ({
+const ContainerPath = styled(Text)((props) => ({
   color: props.theme.colors.grey2,
 }));
 
-const InfoBarContainer = styled(View)<ThemeProps>((props) => ({
+const InfoBarContainer = styled(View)((props) => ({
   backgroundColor: props.theme.colors.grey5,
   padding: 5,
   flexDirection: "row",

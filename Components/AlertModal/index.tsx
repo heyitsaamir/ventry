@@ -49,7 +49,7 @@ export const AlertModal = (props: Props) => {
   );
 };
 
-const AlertContainer = styled(View)<ThemeProps>(({ theme }) => ({
+const AlertContainer = styled(View)(({ theme }) => ({
   display: "flex",
   borderWidth: 1,
   backgroundColor: theme.colors.white,

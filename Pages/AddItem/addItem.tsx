@@ -16,19 +16,25 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
   let isSaved = false;
   const [parentId] = useState(route.params?.parentItemId || "");
   const [visibleModalType, setVisibleModal] = useState<"Unsaved Changes" | undefined>(undefined);
-  const [discardCB, setDiscardCB] = useSettableCallback<(() => void) | undefined>(undefined);
+  const [discardCB, setDiscardCB] = useSettableCallback<() => void>(undefined);
+
+  const ref = useRef<FormRef | null>(null);
 
   const dispatch = useAppDispatch();
   const addItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
+      if (!ref.current?.validate(true) ?? true) {
+        return;
+      }
+
       try {
         const isContainer = fieldInfos.get(FieldType.isContainer)?.isContainer;
-        const name = fieldInfos.get(FieldType.title)?.title;
-        const quantity = fieldInfos.get(FieldType.quantity)?.quantity;
+        const name = fieldInfos.get(FieldType.title)!.title!;
         const upc = fieldInfos.get(FieldType.upc)?.upc;
         const icon = fieldInfos.get(FieldType.icon)?.icon;
-        const containerId = fieldInfos.get(FieldType.containerId)?.containerId;
+        const containerId = fieldInfos.get(FieldType.containerId).containerId;
         if (!isContainer) {
+          const quantity = fieldInfos.get(FieldType.quantity)!.quantity!;
           dispatch(
             addItem({
               newItem: {
@@ -65,7 +71,7 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
         });
       }
     },
-    [dispatch, navigation]
+    [dispatch, navigation, ref]
   );
 
   const fields = useMemo(() => {
@@ -79,8 +85,6 @@ export const AddItemScreen = ({ route, navigation }: Props) => {
     ];
     return new FieldInfoArgs(emptyFields);
   }, [parentId]);
-
-  const ref = useRef<FormRef | null>(null);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {

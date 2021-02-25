@@ -30,17 +30,22 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
   const [visibleModalType, setVisibleModal] = useState<"Delete" | "Unsaved Changes" | undefined>(undefined);
   const [discardCB, setDiscardCB] = useSettableCallback<() => void>(undefined);
   const dispatch = useAppDispatch();
+  const ref = useRef<FormRef | null>(null);
+
   const editItemCb = useCallback(
     (fieldInfos: FieldInfoArgs) => {
       try {
         if (!item) return;
+        if (!ref.current?.validate(true) ?? true) {
+          return;
+        }
         const isContainer = fieldInfos.get(FieldType.isContainer)?.isContainer;
-        const name = fieldInfos.get(FieldType.title)?.title;
-        const quantity = fieldInfos.get(FieldType.quantity)?.quantity;
+        const name = fieldInfos.get(FieldType.title)!.title!;
         const upc = fieldInfos.get(FieldType.upc)?.upc;
         const icon = fieldInfos.get(FieldType.icon)?.icon;
         const containerId = fieldInfos.get(FieldType.containerId)?.containerId;
         if (!isContainer) {
+          const quantity = fieldInfos.get(FieldType.quantity)!.quantity!;
           dispatch(
             editItem({
               updatedItem: {
@@ -79,7 +84,7 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
         });
       }
     },
-    [dispatch, item, navigation]
+    [dispatch, item, navigation, ref]
   );
   const deleteItemCb = useCallback(() => {
     try {
@@ -114,8 +119,6 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
     });
     return navButtons;
   }, [item, navigation]);
-
-  const ref = useRef<FormRef>(null);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {

@@ -191,7 +191,7 @@ const InfoContainer = styled(View)<{ height: number; topPadding: number }>((prop
   alignItems: "flex-end",
 }));
 
-const TitleContainer = styled(View)<ThemeProps>((props) => ({
+const TitleContainer = styled(View)((props) => ({
   height: 50,
   backgroundColor: props.theme.colors.background,
   padding: 5,

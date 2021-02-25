@@ -13,4 +13,7 @@ export type Theme = OriginalTheme<{}> & {
 
 type TP = Omit<ThemeProps<{}>, 'theme'> & { theme: Theme };
 
-export const useTheme: () => TP = useContext(ThemeContext) as any;
+export const useTheme: () => TP = () => {
+  const allContext = useContext(ThemeContext);
+  return allContext as TP;
+}

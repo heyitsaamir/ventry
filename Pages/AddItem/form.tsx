@@ -1,5 +1,5 @@
 import styled from "@emotion/native";
-import React, { forwardRef, useContext, useImperativeHandle, useState } from "react";
+import React, { forwardRef, useContext, useImperativeHandle, useRef, useState, ReactNode, Ref } from "react";
 import { Text, View } from "react-native";
 import { Button, Icon, ListItem } from "react-native-elements";
 import { ScrollView, Switch, TouchableOpacity } from "react-native-gesture-handler";
@@ -55,7 +55,7 @@ interface IsContainerField extends FieldInfo<FieldType.isContainer> {
 }
 
 interface ContainerIdField extends FieldInfo<FieldType.containerId> {
-  containerId?: string;
+  containerId: string;
   itemId: string | undefined;
 }
 
@@ -98,9 +98,14 @@ export class FieldInfoArgs {
   };
 }
 
-export interface FormRef {
+interface ValidationRef {
+  validate(showErrors: boolean): boolean;
+}
+
+export interface FormRef extends ValidationRef {
   isModified(): boolean;
 }
+
 interface Props {
   fields: FieldInfoArgs;
   onDone: (fieldResults: FieldInfoArgs) => void;
@@ -108,21 +113,47 @@ interface Props {
   footer?: React.ReactNode;
 }
 
+const useError = () => {
+  const [error, setError] = React.useState<string | undefined>();
+  return { error, setError };
+};
+
 const useTextInputState: <T = string | undefined>(
   initialValue: T
-) => { value: T; onChangeText: (value: T) => void } = (initialValue) => {
-  const [value, setValue] = React.useState(initialValue);
-  return { value, onChangeText: setValue };
+) => { value: T; onChangeText: (value: T) => void } & ReturnType<typeof useError> = (initialValue) => {
+  const [value, setTextValue] = React.useState(initialValue);
+  const error = useError();
+  const setValue = (val: typeof value): void => {
+    if (error.error) {
+      error.setError(undefined);
+    }
+    setTextValue(val);
+  };
+  return { value, onChangeText: setValue, ...error };
 };
 
 const useNumberInputState = (initialValue: number | undefined) => {
-  const [value, setValue] = React.useState<number | undefined>(initialValue);
-  return { value, onChange: setValue };
+  const [value, setNumberValue] = React.useState<number | undefined>(initialValue);
+  const error = useError();
+  const setValue = (val: typeof value): void => {
+    if (error.error) {
+      error.setError(undefined);
+    }
+    setNumberValue(val);
+  };
+  return { value, onChange: setValue, ...error };
 };
 
 const useBooleanInputState = (initialValue: boolean | undefined) => {
-  const [value, setValue] = React.useState<boolean | undefined>(initialValue);
-  return { value, onValueChange: setValue };
+  const [value, setBooleanValue] = React.useState<boolean | undefined>(initialValue);
+  const error = useError();
+  const setValue = (val: typeof value): void => {
+    if (error.error) {
+      error.setError(undefined);
+    }
+    setBooleanValue(val);
+  };
+  return { value, onValueChange: setValue, ...error };
 };
 
 const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }: Props, ref) => {
@@ -131,9 +162,7 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
   const upcInputState = useTextInputState(fields.get(FieldType.upc)?.upc);
   const quantityInputState = useNumberInputState(fields.get(FieldType.quantity)?.quantity);
   const isContainerInputState = useBooleanInputState(fields.get(FieldType.isContainer)?.isContainer);
-  const containerIdInputState = useTextInputState<string>(
-    fields.get(FieldType.containerId)?.containerId ?? ""
-  );
+  const containerIdInputState = useTextInputState(fields.get(FieldType.containerId)?.containerId);
 
   const onSubmit = () => {
     const fieldInfos: FieldInfos[] = [];
@@ -183,6 +212,12 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
     onDone(new FieldInfoArgs(fieldInfos));
   };
 
+  const titleRef = useRef<ValidationRef>(null);
+  const upcRef = useRef<ValidationRef>(null);
+  const quantityRef = useRef<ValidationRef>(null);
+  const isContainerRef = useRef<ValidationRef>(null);
+  const containerIdRef = useRef<ValidationRef>(null);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -204,6 +239,14 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
           isContainerIdModified
         );
       },
+      validate(showErrors: boolean) {
+        const isTitleValid = titleRef.current?.validate(showErrors) ?? true;
+        const isUpcValid = upcRef.current?.validate(showErrors) ?? true;
+        const isQuantityValid = quantityRef.current?.validate(showErrors) ?? true;
+        const isIsContainerValid = isContainerRef.current?.validate(showErrors) ?? true;
+        const isContainerIdValid = containerIdRef.current?.validate(showErrors) ?? true;
+        return isTitleValid && isUpcValid && isQuantityValid && isIsContainerValid && isContainerIdValid;
+      },
     }),
     [
       fields,
@@ -213,6 +256,11 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
       quantityInputState,
       isContainerInputState,
       containerIdInputState,
+      titleRef,
+      upcRef,
+      quantityRef,
+      isContainerRef,
+      containerIdRef,
     ]
   );
 
@@ -234,26 +282,40 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
         <InputContainer label="Basic information">
           {fields.has(FieldType.title) && (
             <TitleSelector
+              validationRef={titleRef}
               {...titleInputState}
               disabled={fields.isDisabled(FieldType.title)}
               originalTitle={fields.get(FieldType.title)?.title ?? ""}
             />
           )}
           {fields.has(FieldType.isContainer) && (
-            <IsContainerSelector {...isContainerInputState} {...fields.get(FieldType.isContainer)} />
+            <IsContainerSelector
+              validationRef={isContainerRef}
+              {...isContainerInputState}
+              {...fields.get(FieldType.isContainer)}
+            />
           )}
         </InputContainer>
       )}
       {detailsFields && (
         <InputContainer label="Details">
           {fields.has(FieldType.quantity) && !isContainerInputState.value && (
-            <NumberSelector {...quantityInputState} disabled={fields.isDisabled(FieldType.quantity)} />
+            <NumberSelector
+              validationRef={quantityRef}
+              {...quantityInputState}
+              disabled={fields.isDisabled(FieldType.quantity)}
+            />
           )}
           {fields.has(FieldType.upc) && (
-            <UPCSelector {...upcInputState} disabled={fields.isDisabled(FieldType.upc)} />
+            <UPCSelector
+              {...upcInputState}
+              validationRef={upcRef}
+              disabled={fields.isDisabled(FieldType.upc)}
+            />
           )}
           {fields.has(FieldType.containerId) && (
             <ContainerIdSelector
+              validationRef={containerIdRef}
               {...containerIdInputState}
               navigation={navigation}
               disabled={fields.isDisabled(FieldType.containerId)}
@@ -267,6 +329,11 @@ const Form = forwardRef<FormRef, Props>(({ fields, onDone, navigation, footer }:
     </ScrollView>
   );
 });
+
+interface ValidationError {
+  error?: string;
+  setError: (error: string | undefined) => void;
+}
 
 interface StringFieldSelector {
   value: string | undefined;
@@ -295,7 +362,7 @@ const IconSelector = ({
 }: StringFieldSelector & {
   navigation: NavigatorProps;
   isContainer: boolean;
-}) => {
+} & ValidationError) => {
   const { theme } = useTheme();
   const emojiContext = useContext(EmojiSelectorContext);
 
@@ -326,52 +393,93 @@ const IconSelector = ({
   );
 };
 
-const TitleSelector = (props: StringFieldSelector & { originalTitle: string }) => {
+const Validation = forwardRef<
+  ValidationRef,
+  ValidationError & {
+    validate: () => string | undefined;
+    children: (error?: string) => JSX.Element;
+  }
+>((props, ref) => {
+  useImperativeHandle(
+    ref,
+    () => ({
+      validate(showErrors: boolean) {
+        const error = props.validate();
+        if (error) {
+          if (showErrors) {
+            props.setError(error);
+          }
+          return false;
+        }
+        return true;
+      },
+    }),
+    [props.setError, props.validate]
+  );
+
+  const { children: Child } = props;
+  return Child(props.error);
+});
+
+const TitleSelector = forwardRef<
+  ValidationRef,
+  StringFieldSelector & { originalTitle: string } & ValidationError & { validationRef: Ref<ValidationRef> }
+>((props, ref) => {
+  const { theme } = useTheme();
   const [showScanner, setShowScanner] = useState(false);
   const hasModifiedText = props.value !== props.originalTitle;
   const hasAnyText = !!props.value;
   const animation = useAnimation({ doAnimation: hasModifiedText && hasAnyText, duration: 200 });
 
   return (
-    <>
-      <ListItem bottomDivider>
-        <ListItem.Title>Name</ListItem.Title>
-        <ListItem.Content>
-          <ListItem.Input placeholder="of the item" {...props} />
-        </ListItem.Content>
-        <Icon
-          name="camera"
-          type="material-community"
-          disabled={props.disabled}
-          onPress={() => {
-            setShowScanner(true);
-          }}
-        />
-      </ListItem>
-      {
-        <SimilarNameContainer
-          style={{ height: animation.interpolate({ inputRange: [0, 1], outputRange: [0, 70] }) }}
-        >
-          {<SearchedSuggestion searchedText={props.value ?? ""} />}
-        </SimilarNameContainer>
-      }
-      <CameraInput
-        title="Scan your item's name for faster input"
-        isVisible={showScanner}
-        dismiss={() => {
-          setShowScanner(false);
-        }}
-        input={{
-          type: "Text",
-          onTextScanned: (text) => {
-            if (text) props.onChangeText(text);
-            setShowScanner(false);
-          },
-        }}
-      />
-    </>
+    <Validation
+      ref={props.validationRef}
+      {...props}
+      validate={() => (!props.value ? "Name must be set" : undefined)}
+    >
+      {(error) => (
+        <>
+          <ListItem bottomDivider>
+            <ListItem.Title>Name</ListItem.Title>
+            <ListItem.Content>
+              <ListItem.Input placeholder="of the item" {...props} />
+            </ListItem.Content>
+            <Icon
+              name="camera"
+              type="material-community"
+              disabled={props.disabled}
+              onPress={() => {
+                setShowScanner(true);
+              }}
+            />
+          </ListItem>
+          {
+            <SimilarNameContainer
+              style={{ height: animation.interpolate({ inputRange: [0, 1], outputRange: [0, 70] }) }}
+            >
+              {<SearchedSuggestion searchedText={props.value ?? ""} />}
+            </SimilarNameContainer>
+          }
+          <CameraInput
+            title="Scan your item's name for faster input"
+            isVisible={showScanner}
+            dismiss={() => {
+              setShowScanner(false);
+            }}
+            input={{
+              type: "Text",
+              onTextScanned: (text) => {
+                if (text) props.onChangeText(text);
+                setShowScanner(false);
+              },
+            }}
+          />
+          <Error>{error}</Error>
+        </>
+      )}
+    </Validation>
   );
-};
+});
 
 const SearchedSuggestion = ({ searchedText }: { searchedText: string }) => {
   const { theme } = useTheme();
@@ -407,78 +515,118 @@ const ItemTagList = (props: { items: Item[] }) => {
   return <TagList tags={props.items.map((item) => ({ id: item.id, value: item.name }))} />;
 };
 
-const UPCSelector = (props: StringFieldSelector) => {
+const UPCSelector = (
+  props: StringFieldSelector & ValidationError & { validationRef: Ref<ValidationRef> }
+) => {
   const [showScanner, setShowScanner] = useState(false);
+
   return (
-    <>
-      <ListItem bottomDivider>
-        <ListItem.Title>UPC</ListItem.Title>
-        <ListItem.Content>
-          <ListItem.Input placeholder="Optionally add a UPC for quick search" {...props} />
-        </ListItem.Content>
-        <Icon
-          name="barcode-scan"
-          type="material-community"
-          disabled={props.disabled}
-          onPress={() => {
-            setShowScanner(true);
-          }}
-        />
-      </ListItem>
-      <CameraInput
-        title="Scan your item's barcode"
-        isVisible={showScanner}
-        dismiss={() => {
-          setShowScanner(false);
-        }}
-        input={{
-          type: "Barcode",
-          onBarcodeScanned: (text) => {
-            if (text) props.onChangeText(text);
-            setShowScanner(false);
-          },
-        }}
-      />
-    </>
+    <Validation ref={props.validationRef} {...props} validate={() => undefined}>
+      {(error) => (
+        <>
+          <ListItem bottomDivider>
+            <ListItem.Title>UPC</ListItem.Title>
+            <ListItem.Content>
+              <ListItem.Input placeholder="Optionally add a UPC for quick search" {...props} />
+            </ListItem.Content>
+            <Icon
+              name="barcode-scan"
+              type="material-community"
+              disabled={props.disabled}
+              onPress={() => {
+                setShowScanner(true);
+              }}
+            />
+          </ListItem>
+          <Error>{error}</Error>
+          <CameraInput
+            title="Scan your item's barcode"
+            isVisible={showScanner}
+            dismiss={() => {
+              setShowScanner(false);
+            }}
+            input={{
+              type: "Barcode",
+              onBarcodeScanned: (text) => {
+                if (text) props.onChangeText(text);
+                setShowScanner(false);
+              },
+            }}
+          />
+        </>
+      )}
+    </Validation>
   );
 };
 
-const NumberSelector = (props: NumberFieldSelector) => {
+const NumberSelector = (
+  props: NumberFieldSelector & ValidationError & { validationRef: Ref<ValidationRef> }
+) => {
   return (
-    <ListItem bottomDivider>
-      <ListItem.Content>
-        <ListItem.Title>How many?</ListItem.Title>
-      </ListItem.Content>
-      <NumberInput {...props} />
-    </ListItem>
+    <Validation
+      ref={props.validationRef}
+      {...props}
+      validate={() =>
+        !props.value
+          ? "Quantity must be set"
+          : props.value < 0
+          ? "Quantity needs to be greater or equal to 0"
+          : undefined
+      }
+    >
+      {(error) => (
+        <>
+          <ListItem bottomDivider>
+            <ListItem.Content>
+              <ListItem.Title>How many?</ListItem.Title>
+            </ListItem.Content>
+            <NumberInput {...props} />
+          </ListItem>
+
+          <Error>{error}</Error>
+        </>
+      )}
+    </Validation>
   );
 };
 
-const IsContainerSelector = (props: BooleanFieldSelector & Omit<IsContainerField, "isContainer">) => {
+const IsContainerSelector = (
+  props: BooleanFieldSelector &
+    Omit<IsContainerField, "isContainer"> &
+    ValidationError & { validationRef: Ref<ValidationRef> }
+) => {
   const { theme } = useTheme();
   return (
-    <ListItem bottomDivider>
-      <ListItem.Content>
-        <ListItem.Title>Is this a container?</ListItem.Title>
-        {props.comment && <ListItem.Subtitle>{props.comment}</ListItem.Subtitle>}
-      </ListItem.Content>
-      <Switch
-        {...props}
-        value={props.value ?? false}
-        ios_backgroundColor={theme.colors.border}
-        trackColor={{ true: theme.colors.secondary, false: theme.colors.border }}
-      />
-    </ListItem>
+    <Validation ref={props.validationRef} {...props} validate={() => undefined}>
+      {(error) => (
+        <>
+          <ListItem bottomDivider>
+            <ListItem.Content>
+              <ListItem.Title>Is this a container?</ListItem.Title>
+              {props.comment && <ListItem.Subtitle>{props.comment}</ListItem.Subtitle>}
+            </ListItem.Content>
+            <Switch
+              {...props}
+              value={props.value ?? false}
+              ios_backgroundColor={theme.colors.border}
+              trackColor={{ true: theme.colors.secondary, false: theme.colors.border }}
+            />
+          </ListItem>
+          <Error>{error}</Error>
+        </>
+      )}
+    </Validation>
   );
 };
 
-const ContainerIdSelector = ({
-  value,
-  onChangeText,
-  navigation,
-  disabled,
-  itemId,
-}: StringFieldSelector & { value: string; navigation: NavigatorProps; itemId: string | undefined }) => {
+const ContainerIdSelector = (
+  props: StringFieldSelector & {
+    value: string;
+    navigation: NavigatorProps;
+    itemId: string | undefined;
+  } & ValidationError & { validationRef: Ref<ValidationRef> }
+) => {
+  const { value, onChangeText, navigation, disabled, itemId } = props;
   const searchContext = useContext(SearchContext);
   const containers = useSelector<State, InventoryState["items"]>(
     (state: State) => state.inventory.present.items
@@ -519,13 +667,20 @@ const ContainerIdSelector = ({
   };
 
   return (
-    <ListItem onPress={navigateSearch} disabled={disabled}>
-      <ListItem.Content>
-        <ListItem.Title>Where is this item contained?</ListItem.Title>
-      </ListItem.Content>
-      <ListItem.Title>{parent.name || "Root"}</ListItem.Title>
-      <ListItem.Chevron />
-    </ListItem>
+    <Validation ref={props.validationRef} {...props} validate={() => undefined}>
+      {(error) => (
+        <>
+          <ListItem onPress={navigateSearch} disabled={disabled}>
+            <ListItem.Content>
+              <ListItem.Title>Where is this item contained?</ListItem.Title>
+            </ListItem.Content>
+            <ListItem.Title>{parent.name || "Root"}</ListItem.Title>
+            <ListItem.Chevron />
+          </ListItem>
+          <Error>{error}</Error>
+        </>
+      )}
+    </Validation>
   );
 };
 
@@ -576,7 +731,7 @@ const SubmitButton = styled(Button)({
   marginVertical: 20,
 });
 
-const SimilarNameText = styled(Text)<ThemeProps>((props) => ({
+const SimilarNameText = styled(Text)((props) => ({
   marginTop: 5,
   marginLeft: 5,
   color: props.theme.colors.text,
@@ -586,5 +741,18 @@ const SimilarNameText = styled(Text)<ThemeProps>((props) => ({
 const SimilarNameContainer = styled(Animated.View)({
   width: "100%",
 });
+
+const Error = (props: { children: React.ReactNode }) => {
+  if (props.children) {
+    return <StyledError>{props.children}</StyledError>;
+  }
+  return null;
+};
+
+const StyledError = styled(ListItem.Subtitle)((props) => ({
+  color: props.theme.colors.error,
+  padding: 5,
+  fontStyle: "italic",
+}));
 
 export default Form;
