@@ -19,7 +19,7 @@ const removeItemIdFromRoutes = (
       if ((route.params as RouteParams["EditItem"] | RouteParams["ItemDetails"]).itemId === itemId) {
         return newRouteList;
       }
-    } else if (route.name === "Main" && route.state) {
+    } else if ((route.name === "Main" || route.name === 'AccountTab' || route.name === 'ExploreTab') && route.state) {
       const { routes, ...otherStateValues } = route.state as NavigationState<RouteParams>;
       if (routes) {
         const newMainRoutes = removeItemIdFromRoutes(itemId, routes);

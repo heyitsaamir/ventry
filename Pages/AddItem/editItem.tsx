@@ -108,7 +108,7 @@ const EditItem = ({ item, navigation }: { item: Item; navigation: NavigatorProps
         position: "bottom",
       });
     }
-  }, [dispatch, item, navigation]);
+  }, [dispatch, item.name, navigation]);
 
   const navButtons = useMemo(() => {
     const navButtons: RightNavButtonOptions[] = [];
