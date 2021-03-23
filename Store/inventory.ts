@@ -69,6 +69,8 @@ export const inventorySlice = createSlice<InventoryState, SliceCaseReducers<Inve
           id: uuid.v4(),
           createdAtUTC: new Date().toUTCString(),
         };
+      } else {
+        throw new Error(`Unknown item type ${JSON.stringify(newItem)}`);
       }
       const parent = state.items[action.payload.parentId];
       if (parent.type !== "Container") throw new Error("The parent id is not a container!");
@@ -168,10 +170,10 @@ const {
 } = inventorySlice.actions;
 
 export default inventorySlice.reducer;
-export const addItem: ActionCreatorWithPayload<AddItemParams> = addItemFn;
-export const editItem: ActionCreatorWithPayload<EditItemParams> = editItemFn;
-export const deleteItem: ActionCreatorWithPayload<DeleteItemParams> = deleteItemFn;
-export const changeInQuantity: ActionCreatorWithPayload<ChangeInQuantity> = changeInQuantityFn;
+export const addItem: ActionCreatorWithPayload<AddItemParams | undefined> = addItemFn;
+export const editItem: ActionCreatorWithPayload<EditItemParams | undefined> = editItemFn;
+export const deleteItem: ActionCreatorWithPayload<DeleteItemParams | undefined> = deleteItemFn;
+export const changeInQuantity: ActionCreatorWithPayload<ChangeInQuantity | undefined> = changeInQuantityFn;
 
 const deleteItemRecursive = (state: InventoryState, payload: DeleteItemParams) => {
   const { itemId, includeContents = false } = payload;
@@ -242,17 +244,23 @@ const addHistoryItem = (state: InventoryState, itemId: string, summary: Summary[
 };
 
 type KeysOfItem = keyof ContainerItem | keyof NonContainerItem;
-const keysToCheck: KeysOfItem[] = ["name", "type", "upc", "quantity", "icon"];
+const keysToCheck = ["name" as const, "type" as const, "upc" as const, "quantity" as const, "icon" as const];
 const evaluateSimpleDifferenceInObject = (originalItem: Item, newItem: Item): Summary[] => {
-  const differences = Array.from(new Set(Object.keys(originalItem).concat(Object.keys(newItem)))).reduce(
-    (differences, key: keyof ContainerItem | keyof NonContainerItem) => {
-      if (keysToCheck.includes(key) && originalItem[key] !== newItem[key]) {
-        if (!!originalItem[key] && !!newItem[key]) {
-          differences.push({ summary: `Changed ${key} from ${originalItem[key]} to ${newItem[key]}`, key });
-        } else if (!!originalItem[key]) {
-          differences.push({ summary: `Removed ${key} from ${originalItem[key]} to ${newItem[key]}`, key });
-        } else if (!!newItem[key]) {
-          differences.push({ summary: `Changed ${key} to ${newItem[key]}`, key });
+  const differences = Array.from(new Set(keysToCheck)).reduce(
+    (differences, key) => {
+      const originalItemField = (originalItem as any)[key];
+      const newItemField = (newItem as any)[key];
+      if (originalItemField === undefined && newItemField === undefined) {
+        return differences;
+      }
+
+      if (originalItemField !== newItemField) {
+        if (!!originalItemField && !!newItemField) {
+          differences.push({ summary: `Changed ${key} from ${originalItemField} to ${newItemField}`, key });
+        } else if (!!originalItemField) {
+          differences.push({ summary: `Removed ${key} from ${originalItemField} to ${newItemField}`, key });
+        } else if (!!newItemField) {
+          differences.push({ summary: `Changed ${key} to ${newItemField}`, key });
         }
       }
       return differences;
