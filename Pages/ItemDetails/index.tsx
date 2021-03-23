@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo } from "react";
-import { Animated, SafeAreaView, View } from "react-native";
+import React, { useCallback, useMemo, useRef } from "react";
+import { Animated, Easing, SafeAreaView, View } from "react-native";
 import styled from "@emotion/native";
 import { useSelector } from "react-redux";
 import { Item, State } from "../../Store/types";
@@ -20,6 +20,8 @@ import { useAppDispatch } from "../../Store";
 import { changeInQuantity } from "../../Store/inventory";
 import { ItemCard } from "./Card";
 import { Theme, useTheme } from "../../Components/Theme";
+import TextTicker from "react-native-text-ticker";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 type Route = {
   key: "first" | "second";
@@ -32,7 +34,7 @@ interface Props extends ScreenProps<"ItemDetails"> {
 
 export const ItemDetailsScreen = ({ route }: Props) => {
   const itemId = route.params.itemId;
-  const item = useSelector<State, Item>((state) => state.inventory.present.items[itemId]);
+  const item = useSelector<State, Item | undefined>((state) => state.inventory.present.items[itemId]);
   const [index, setIndex] = React.useState(0);
   const nav = useNav();
   const { theme } = useTheme();
@@ -48,23 +50,23 @@ export const ItemDetailsScreen = ({ route }: Props) => {
     return navButtons;
   }, [item]);
   useCustomNav({
-    title: item.name,
+    title: item?.name,
     rightButtons: navButtons,
   });
 
   const onCreateNewItem = useCallback(() => {
-    if (IsContainer(item)) {
+    if (item && IsContainer(item)) {
       nav.navigate("AddItem", { parentItemId: item.id });
     }
   }, [nav, item]);
 
   const increaseInQuantity = useCallback(() => {
-    if (!IsContainer(item)) {
+    if (item && !IsContainer(item)) {
       dispatch(changeInQuantity({ itemId: item.id, type: "addOne" }));
     }
   }, [dispatch, item]);
   const removeInQuantity = useCallback(() => {
-    if (!IsContainer(item)) {
+    if (item && !IsContainer(item)) {
       dispatch(changeInQuantity({ itemId: item.id, type: "removeOne" }));
     }
   }, [dispatch, item]);
@@ -82,7 +84,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
         { key: "second", title: "History" },
       ] as Route[],
     };
-  }, [itemId, nav, item.type]);
+  }, [itemId, nav, item?.type]);
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {item ? (
@@ -102,7 +104,7 @@ export const ItemDetailsScreen = ({ route }: Props) => {
         <Text>Does not exist</Text>
       )}
       <FabContainer>
-        {IsContainer(item) ? (
+        {item && IsContainer(item) ? (
           <Icon
             reverse
             onPress={onCreateNewItem}
@@ -194,14 +196,28 @@ const ItemHeader = ({ item, theme }: { item: Item; theme: Theme }) => {
     }
     return 0;
   });
+
+  const marqueeRef = useRef<any>(null);
   return (
     <>
-      <TitleContainer pointerEvents="none" style={{ backgroundColor: theme.colors.white }}>
+      <TitleContainer style={{ backgroundColor: theme.colors.white }}>
         <ItemIconContainer size="md" isContainer={IsContainer(item)} icon={item.icon} />
-        <TitleContent>
-          <Text h3 style={{ fontWeight: "bold" }}>
+        <TitleContent
+          onPress={() => {
+            console.log("foo");
+            marqueeRef.current?.startAnimation(10);
+          }}
+        >
+          <TextTicker
+            numberOfLines={1}
+            ellipsizeMode={"tail"}
+            ref={marqueeRef}
+            marqueeOnMount={false}
+            loop={false}
+            style={{ fontWeight: "bold", fontSize: 30 }}
+          >
             {item.name}
-          </Text>
+          </TextTicker>
           <Text>{dateFormat(item.createdAtUTC, "ddd mmm dS 'yy")}</Text>
           {item.id !== "" && (
             <ContainerPath theme={theme}>
@@ -239,7 +255,7 @@ const TitleContainer = styled(View)({
   alignItems: "center",
 });
 
-const TitleContent = styled(View)({});
+const TitleContent = styled(TouchableWithoutFeedback)({ flex: 1 });
 
 const ItemIconContainer = styled(ItemIcon)({ marginLeft: 5, marginRight: 15 });
 

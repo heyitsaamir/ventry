@@ -36,6 +36,7 @@
     "react-native-screens": "~2.15.0",
     "react-native-svg": "12.1.0",
     "react-native-tab-view": "^2.15.2",
+    "react-native-text-ticker": "^1.11.0",
     "react-native-toast-message": "^1.4.3",
     "react-native-unimodules": "~0.12.0",
     "react-native-uuid": "^1.4.9",
@@ -51,6 +52,7 @@
     "@types/react": "~16.9.35",
     "@types/react-dom": "~16.9.8",
     "@types/react-native": "~0.63.2",
+    "@types/react-native-uuid": "^1.4.0",
     "@types/react-redux": "^7.1.14",
     "babel-jest": "~25.2.6",
     "jest": "~25.2.6",
@@ -64,7 +66,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo web",
-    "eject": "expo eject"
+    "eject": "expo eject",
+    "build-android": "cd android && ./gradlew bundleRelease"
   },
   "private": true,
   "name": "ventry",

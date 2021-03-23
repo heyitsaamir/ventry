@@ -1805,6 +1805,11 @@
   dependencies:
     "@types/react" "^16"
 
+"@types/react-native-uuid@^1.4.0":
+  version "1.4.0"
+  resolved "https://packages.convoy.com/artifactory/api/npm/npm/@types/react-native-uuid/-/react-native-uuid-1.4.0.tgz#b37501042bbeb7066b7386804adf41f1b219f18f"
+  integrity sha1-s3UBBCu+twZrc4aASt9B8bIZ8Y8=
+
 "@types/react-native-vector-icons@^6.4.6":
   version "6.4.6"
   resolved "https://registry.yarnpkg.com/@types/react-native-vector-icons/-/react-native-vector-icons-6.4.6.tgz#848e3b14572def56212cafbf5cb1254b445bfb41"
@@ -6844,6 +6849,11 @@ react-native-tab-view@^2.15.2:
   version "2.15.2"
   resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-2.15.2.tgz#4bc7832d33a119306614efee667509672a7ee64e"
   integrity sha512-2hxLkBnZtEKFDyfvNO5EUywhy3f/EiLOBO8SWqKj4BMBTO0QwnybaPE5MVF00Fhz+VA4+h/iI40Dkrrtq70dGg==
+
+react-native-text-ticker@^1.11.0:
+  version "1.11.0"
+  resolved "https://packages.convoy.com/artifactory/api/npm/npm/react-native-text-ticker/-/react-native-text-ticker-1.11.0.tgz#d1711613b4cd6f0ffa0a7335f8de172f5e63190f"
+  integrity sha1-0XEWE7TNbw/6CnM1+N4XL15jGQ8=
 
 react-native-toast-message@^1.4.3:
   version "1.4.3"
